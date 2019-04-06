@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign up</title>
+    <link rel="icon" href="/image/icon.png">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="/css/sign-style.css" rel="stylesheet">
+</head>
+<body>
+
+
+
+<form class="form-signin" th:action="@{/signup}" method="POST" th:object="${user}">
+
+    <div th:if="${exists}" class="alert alert-warning" role="alert">
+        Provided email or username is already taken!
+    </div>
+
+    <div th:if="${userSaved}" class="alert alert-success">
+        Now just scan this QR Code to activate your account!
+    </div>
+
+    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="alert alert-danger" >
+    </div>
+
+    <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="alert alert-danger" >
+    </div>
+
+    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="alert alert-danger">
+    </div>
+
+
+    <div class="text-center mb-4">
+        <img class="mb-4" src="/image/icon.png" alt="" width="140" height="140">
+        <h1 class="h3 mb-3 font-weight-normal h1form white">Sign up!</h1>
+    </div>
+
+
+    <div class="form-label-group">
+    <input type="email" th:field="*{email}" class="form-control" placeholder="Email" autofocus required>
+    </div>
+
+    <div class="form-label-group">
+    <input type="text" th:field="*{username}" class="form-control" placeholder="Username" required>
+    </div>
+
+    <div class="form-label-group">
+    <input type="password" th:field="*{password}" class="signup-password form-control" placeholder="Password" required>
+    </div>
+
+    <input type="hidden" th:value="${pin}">
+    <button type="submit" class="btn btn-primary btn-lg btn-block">Sign up</button>
+</form>
+
+
+<div id="qrcode-container"></div>
+
+
+
+<script src="/js/qrcode.min.js"></script>
+<script src="/js/validation.js"></script>
+<div th:if="${qrcode}">
+    <script src="/js/activator.js"></script>
+
+</div>
+
+</body>
+</html>

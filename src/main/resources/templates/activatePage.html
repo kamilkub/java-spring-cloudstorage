@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/image/icon.png">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>Enable your account</title>
+    <link rel="stylesheet" href="/css/home-style.css">
+</head>
+<body>
+
+<div class="text-center" style="width:45%;margin:auto;">
+
+<div th:if="${badPIN}" class="alert alert-danger">Enabling encounter problems, seems like your pin number is wrong</div>
+
+<div th:if="${activationSuccess}" class="alert alert-success">Enabled succesfully</div>
+<a href="/signin" class="btn btn-primary btn-lg">Sign in</a>
+
+</div>
+
+</body>
+</html>

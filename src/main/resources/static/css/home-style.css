@@ -1,0 +1,39 @@
+body{
+  background-image: linear-gradient(to left, #d91e51 , 10%, #091124);
+
+}
+
+.main-content{
+  margin:auto;
+  width:70%;
+  padding:7%;
+
+}
+
+.front-logo{
+   width:55%;
+
+}
+
+.front-logo h1,h2,h3{
+  color:white;
+}
+
+.auth-buttons{
+   width:45%;
+   float:right;
+   margin-top:5%;
+}
+
+.top-menu a{
+  margin-right:2%;
+  text-decoration:none;
+  font-size:25px;
+  color:white;
+  width:100%;
+  height:70px;
+}
+
+.top-menu{
+  text-align: right;
+}
