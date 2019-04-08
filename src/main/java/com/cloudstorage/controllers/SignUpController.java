@@ -74,7 +74,6 @@ public class SignUpController {
 	@GetMapping("/activate")
 	public String activateUser(@RequestParam("pin") String pin, Model model){
 
-		System.out.print(pin);
 
          Users user = signUpService.findByPin(pin);
 

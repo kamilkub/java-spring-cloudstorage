@@ -4,31 +4,26 @@
     <meta charset="UTF-8">
     <link rel="icon" href="/image/icon.png">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Varela+Round">
     <link rel="stylesheet" href="/css/user-menu.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
     <title>Cloud Service</title>
 </head>
 <body>
 
 
+<div th:replace="/usermenu/sidebar"></div>
 
-    <form action="/user/storage/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <button type="submit">Upload File</button>
-    </form>
+
+
+
+<form action="/user/storage/upload" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file">
+    <button type="submit">Upload File</button>
+</form>
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="/js/uploader-storage.js"></script>
-
-
-<div class="files-listing">
-
-
-
-
-
-</div>
-
-    <a th:href="@{/logout}">logout</a>
 
 
 
