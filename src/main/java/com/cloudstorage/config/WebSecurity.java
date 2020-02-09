@@ -23,7 +23,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(authenticationService);
+		auth.userDetailsService(authenticationService)
+				.passwordEncoder(bCryptPasswordEncoder());
 	}
 
 	@Override
@@ -31,16 +32,18 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 
 		http.authorizeRequests()
-				.antMatchers("/home", "/").permitAll()
+				.antMatchers("/user", "/user/*").authenticated()
+				.antMatchers("/home", "/", "/sign-up", "/activate").permitAll()
 				.and()
-				.formLogin().loginPage("/signin")
-				.loginProcessingUrl("/signin")
+				.formLogin().loginPage("/sign-in")
+				.loginProcessingUrl("/sign-in")
 				.defaultSuccessUrl("/user")
+				.permitAll()
 				.and()
 				.rememberMe()
 				.and()
 				.logout().permitAll()
-				.logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/signin?logout")
+				.logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/sign-in?logout")
 				.deleteCookies("remember-me");
 
 

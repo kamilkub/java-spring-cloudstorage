@@ -1,112 +1,103 @@
 package com.cloudstorage.controllers;
 
 
-
 import com.cloudstorage.model.Users;
 import com.cloudstorage.service.SignUpService;
 import com.cloudstorage.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.Random;
 
 @Controller
 public class SignUpController {
 
-
-	@Autowired
 	private SignUpService signUpService;
 
-	@Autowired
 	private StorageService storageService;
 
 
-	@GetMapping("/signup")
-	public String signUpPage(Model model){
+	@Autowired
+	public SignUpController(SignUpService signUpService, StorageService storageService) {
+		this.signUpService = signUpService;
+		this.storageService = storageService;
+	}
 
-		model.addAttribute("user", new Users());
-
-		return "authtemps/signupPage";
-
+	@GetMapping("/sign-in")
+	public String showLoginPage(){
+		return "auth_templates/sign-in";
 	}
 
 
-	@PostMapping("/signup")
+	@GetMapping("/sign-up")
+	public String signUpPage(Model model){
+		model.addAttribute("user", new Users());
+		return "auth_templates/sign-up";
+	}
+
+
+	@PostMapping("/sign-up")
 	public String signUpUser(@Valid @ModelAttribute("user") Users user, BindingResult result, Model model) throws IOException {
 
 		if (result.hasErrors()) {
 
-		}else {
+		} else {
 
 			if (signUpService.findByEmail(user.getEmail()) != null && signUpService.findByUsername(user.getUsername()) != null) {
 				model.addAttribute("exists", true);
-				return "authtemps/signupPage";
+				return "auth_templates/sign-up";
+
+
 
 			} else {
 
-				int pin = generateActivaionPin();
-				String stringPin = String.valueOf(pin);
+				String stringPin = String.valueOf(signUpService.generateActivationPin());
 
-				model.addAttribute("pin", "http://localhost:8080/activate?pin="+stringPin);
+				model.addAttribute("pin", "http://localhost:8080/activate?pin=" + stringPin);
 				model.addAttribute("userSaved", true);
 				model.addAttribute("qrcode", true);
 
+				user.setDirectoryName(user.getUsername());
 				user.setPin(stringPin);
 				signUpService.signUpUser(user);
 				storageService.init(user.getUsername());
 
+				return "auth_templates/sign-up";
 
-				return "authtemps/signupPage";
 
 			}
 
 		}
-		return "authtemps/signupPage";
+		return "auth_templates/sign-up";
+
 
 	}
 
 	@GetMapping("/activate")
 	public String activateUser(@RequestParam("pin") String pin, Model model){
 
-
          Users user = signUpService.findByPin(pin);
 
          if(user == null){
-         	model.addAttribute("badPIN", true);
+         		model.addAttribute("wrong-pin-number", true);
+
          	return "activatePage";
 		 }else{
+         		signUpService.activateUser(user);
+         		model.addAttribute("activation-success", true);
 
-         	signUpService.activateUser(user);
-			 model.addAttribute("activationSuccess", true);
          	return "activatePage";
 		 }
 
 
 	}
-
-
-	@GetMapping("/signin")
-	public String showLoginPage(){
-
-		return "authtemps/signinPage";
-	}
-
-
-	private static int generateActivaionPin(){
-
-		return 10000 + new Random().nextInt(90000);
-	}
-
-
-
-
-
 
 
 }

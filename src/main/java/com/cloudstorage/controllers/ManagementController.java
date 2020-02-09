@@ -2,13 +2,16 @@ package com.cloudstorage.controllers;
 
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+
 
 @Controller
-@RequestMapping("/user")
 public class ManagementController {
 
-
-
+        /*
+        &UNIMPLEMENTED
+        Implementation @/user/device
+        // > Considerate if that option will be useful,
+        // > otherwise get rid of it
+         */
 
 }

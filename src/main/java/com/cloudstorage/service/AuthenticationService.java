@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -31,14 +31,14 @@ public class AuthenticationService implements UserDetailsService {
 			throw new UsernameNotFoundException("No user found for this username");
 		}
 
-		if(!user.isActivated()){
+		if(!user.isEnabled()){
 			throw new UsernameNotFoundException("User is not activated");
 		}
 
 
-		List<SimpleGrantedAuthority> auths = Arrays.asList(new SimpleGrantedAuthority("user"));
+		List<SimpleGrantedAuthority> grantedAuth = Collections.singletonList(new SimpleGrantedAuthority("user"));
 
 
-		return new User(user.getUsername(), user.getPassword(), auths);
+		return new User(user.getUsername(), user.getPassword(), grantedAuth);
 	}
 }

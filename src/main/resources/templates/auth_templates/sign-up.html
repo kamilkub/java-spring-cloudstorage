@@ -12,15 +12,12 @@
 
 
 
-<form class="form-signin" th:action="@{/signup}" method="POST" th:object="${user}">
+<form class="form-signin" th:action="@{/sign-up}" method="POST" th:object="${user}">
 
     <div th:if="${exists}" class="alert alert-warning" role="alert">
         Provided email or username is already taken!
     </div>
 
-    <div th:if="${userSaved}" class="alert alert-success">
-        Now just scan this QR Code to activate your account!
-    </div>
 
     <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="alert alert-danger" >
     </div>
@@ -55,7 +52,11 @@
 </form>
 
 
-<div id="qrcode-container"></div>
+<div id="qrcode-container">
+    <div th:if="${userSaved}" class="alert alert-success">
+        Now just scan this QR Code to activate your account!
+    </div>
+</div>
 
 
 

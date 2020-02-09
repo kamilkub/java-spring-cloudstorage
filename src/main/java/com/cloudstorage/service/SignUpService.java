@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class SignUpService {
@@ -16,20 +17,20 @@ public class SignUpService {
     @Autowired
 	private BCryptPasswordEncoder bcrypt;
 
-	@Autowired
 	private UsersRepository usersRepository;
 
+	@Autowired
 	public SignUpService(UsersRepository usersRepository){
 		this.usersRepository = usersRepository;
 	}
 
-	public Users signUpUser(Users user){
+	public void signUpUser(Users user){
 		user.setPassword(bcrypt.encode(user.getPassword()));
-		return usersRepository.save(user);
+		usersRepository.save(user);
 	}
 
 	public Users activateUser(Users user){
-		user.setActivated(true);
+		user.setEnabled(true);
 		return usersRepository.save(user);
 	}
 
@@ -53,8 +54,8 @@ public class SignUpService {
 
 
 
-	private String generatePIN(){
-		return "";
+	public int generateActivationPin(){
+		return 10000 + new Random().nextInt(90000);
 	}
 
 

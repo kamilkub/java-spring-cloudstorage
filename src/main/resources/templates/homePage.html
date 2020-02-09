@@ -12,21 +12,42 @@
 <body>
 
 
-<div th:replace="/usermenu/sidebar"></div>
+<div class="flexy-container">
 
 
+    <div th:replace="/usermenu/sidebar"></div>
 
+    <div class="main-viewer">
 
-<form action="/user/storage/upload" method="POST" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <button type="submit">Upload File</button>
-</form>
+        <div class="topper">
+            <h4>Top bar</h4>
+        </div>
+
+        <!--        Left side content     -->
+
+        <div class="side-viewer whiter">
+            <table>
+                <tbody class="render-files">
+
+                </tbody>
+            </table>
+        </div>
+
+        <!--        Right side content     -->
+
+        <div class="side-viewer">
+            <form action="/user/storage/upload" method="POST" enctype="multipart/form-data">
+                <input type="file" name="files" multiple>
+                <button type="submit">Upload File</button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="/js/uploader-storage.js"></script>
-
-
-
-
 </body>
 </html>

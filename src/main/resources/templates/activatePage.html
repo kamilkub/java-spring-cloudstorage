@@ -11,9 +11,9 @@
 
 <div class="text-center" style="width:45%;margin:auto;">
 
-<div th:if="${badPIN}" class="alert alert-danger">Enabling encounter problems, seems like your pin number is wrong</div>
+<div th:if="${wrong-pin-number}" class="alert alert-danger">Enabling encountered problems, seems like your pin number is wrong</div>
 
-<div th:if="${activationSuccess}" class="alert alert-success">Enabled succesfully</div>
+<div th:if="${activation-success}" class="alert alert-success">Enabled successfully</div>
 <a href="/signin" class="btn btn-primary btn-lg">Sign in</a>
 
 </div>
