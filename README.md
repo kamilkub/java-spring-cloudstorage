@@ -10,7 +10,7 @@
 
 
 ## Steps to set-up the project
-- MongoDB up and running on 27017
+- MongoDB up and running on port 27017
 - Create database called 'cloudstorage' in your MongoDB
 - Folder on your home directory called '/cloudstorage/'
 
@@ -23,3 +23,5 @@
 - Spring Security
 - HTML5 CSS3
 - Bootstrap 4
+- Lombok
+- JUnit
