@@ -5,7 +5,9 @@ import com.cloudstorage.model.BaseFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.util.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -18,62 +20,78 @@ public class StorageService {
 	@Value("${BASE_PATH}")
 	private String basePath;
 
-	public boolean uploadFile(MultipartFile storageFile, String userFolder) {
+	public void uploadFile(MultipartFile storageFile, String userFolder) {
 
-		Path storagePath = Paths.get(getBasePath()+userFolder);
+		Path storagePath = Paths.get(getBasePath() + userFolder);
 
 			try {
 				Files.copy(storageFile.getInputStream(), storagePath.resolve(Objects.requireNonNull(storageFile.getOriginalFilename())));
-				return true;
 
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
-		return false;
 	}
 
 	/*
 	  $ init() method - creates new folder for signed up user
 	 */
 
-	public boolean init(String userFolder) {
+	public void init(String userDirectory) {
 
 		try {
-			Files.createDirectory(Paths.get(getBasePath()+userFolder));
-			return true;
-
+			Files.createDirectory(Paths.get(getBasePath() + userDirectory));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		return false;
 	}
 
 
-	public ArrayList<BaseFile> getFileAndDirectoriesPaths(String path)  {
+	public void createDirectory(String userDirectory, String directoryName) {
+		try {
+			Files.createDirectory(Paths.get(getBasePath() + userDirectory + File.separator + directoryName));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-		ArrayList<BaseFile> userFilePaths = new ArrayList<>();
 
+	public ArrayList<BaseFile> getFileAndDirectoriesPaths(String userDirectory)  {
+
+		ArrayList<BaseFile> userDirectoriesAndFiles = new ArrayList<>();
 
 
 		try {
-			Files.walkFileTree(Paths.get(getBasePath() + "/" + path), new FileVisitor<Path>() {
+			Files.walkFileTree(Paths.get(getBasePath() + userDirectory), new FileVisitor<Path>() {
 
 				int counter = 0;
+				String stablePath = "\\cloudstorage\\" + userDirectory;
+				String realPath = "";
+				String fullPath = "";
 
 				@Override
 				public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
+					if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isDirectory()) {
+						realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
+						fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
+						BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
+						userDirectoriesAndFiles.add(baseFile);
+						counter++;
+					}
 					return FileVisitResult.CONTINUE;
 				}
 
 				@Override
 				public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
-					System.out.println(basicFileAttributes.size());
-					if(basicFileAttributes.isRegularFile() || basicFileAttributes.isDirectory()) {
-						userFilePaths.add(new BaseFile(counter, path.getFileName().toString(), path.getRoot().toString()));
+					if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isRegularFile()) {
+						realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
+						fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
+						BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
+						userDirectoriesAndFiles.add(baseFile);
 						counter++;
 					}
+
 					return FileVisitResult.CONTINUE;
 				}
 
@@ -91,18 +109,19 @@ public class StorageService {
 			e.printStackTrace();
 		}
 
-		return userFilePaths;
+		return userDirectoriesAndFiles;
 
 	}
 
-	public boolean removeFileByName(String name) {
+	public boolean removeFileByName(String userDirectory, String fileName) {
 		try {
-			Files.delete(Paths.get(getBasePath()+name));
+			Files.delete(Paths.get(getBasePath() + userDirectory + "/" + fileName));
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
+
 	}
 
 

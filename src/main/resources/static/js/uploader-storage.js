@@ -6,16 +6,22 @@
 function getAllFilesAndRender () {
     $.get("/user/all-files", (data, status) => {
         var renderData = "";
+        var fileTypeIcon = "";
         for(var i = 0; i < data.length; i++) {
+        if(data[i].fileType === "dir")
+            fileTypeIcon = "<img src='https://img.icons8.com/officel/30/000000/delete-folder.png'>";
+        else
+            fileTypeIcon = "<img src='https://img.icons8.com/office/30/000000/delete-file.png'>";
+
          renderData += "<tr>"+
                             "<td>"+data[i].fileName+"</td>"+
                             "<td>"+
                             "<a class='remove-click' data='"+data[i].fileName+"'>"+
-                            "<img src='https://img.icons8.com/office/30/000000/delete-file.png'>"+
+                            fileTypeIcon +
                             "</a>"+
                             "</td>"+
                             "<td>"+
-                            "<a download>"+"<img src='https://img.icons8.com/ultraviolet/30/000000/download.png'>"+"</a>" +
+                            "<a download>" + "<img src='https://img.icons8.com/ultraviolet/30/000000/download.png'>" + "</a>" +
                             "</td>"
                         +"</tr>"
         }
@@ -26,12 +32,36 @@ function getAllFilesAndRender () {
 
 getAllFilesAndRender();
 
+
+
+$('.create-dir').click((e) => {
+    e.preventDefault();
+    let directoryName = prompt("Directory name: ");
+
+    if(directoryName.length > 0) {
+        const createDirRequest = $.post('/user/create-dir/' + directoryName, (response) => {
+                console.log(response);
+        });
+
+        createDirRequest.done((msg) => {
+            console.log("Directory created");
+            getAllFilesAndRender();
+        });
+
+        createDirRequest.fail((error) => {
+            console.log(error);
+        });
+    }
+
+})
+
+
 /*
-   @@ Uploading AJAX Reuqest - single file upload
+   @@ Uploading AJAX Request - single file upload
 
  */
 
-$("button[type='submit']").click((e) => {
+$(".upload-click").click((e) => {
 
   e.preventDefault();
 
@@ -81,8 +111,9 @@ uploadRequest.fail((error) => {
 
           if(confirm("Sure you want to delete this file?") && fileName != undefined){
               const deleteRequest = $.ajax({
-                  url: '/user/delete-file/' + fileName,
+                  url: '/user/delete-file/',
                   type: 'POST',
+                  data: fileName,
                   cache: false,
                   contentType: false,
                   processData: false

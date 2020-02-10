@@ -2,23 +2,20 @@ package com.cloudstorage.controllers;
 
 
 import com.cloudstorage.model.BaseFile;
-import com.cloudstorage.model.Users;
 import com.cloudstorage.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 
 @RestController
+@RequestMapping("/user")
 public class StorageController {
 
 
@@ -29,8 +26,8 @@ public class StorageController {
 		this.storageService = storageService;
 	}
 
-	@PostMapping("/user/storage/upload")
-	public String storageUpload(@RequestParam("files") MultipartFile[] storageFile) throws IOException {
+	@PostMapping("/storage/upload")
+	public String storageUpload(@RequestParam("files") MultipartFile[] storageFile) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		if(storageFile.length != 0){
@@ -40,11 +37,11 @@ public class StorageController {
 		return "redirect:/user";
 	}
 
-	@PostMapping("/user/delete-file/{name}")
-	public String deleteFile(@PathVariable("name") String name){
+	@PostMapping("/delete-file")
+	public String deleteFile(@RequestBody String fileName){
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		String path = authentication.getName() + "/" + name;
-		boolean isRemoved = storageService.removeFileByName(path);
+
+		boolean isRemoved = !fileName.isEmpty() && storageService.removeFileByName(authentication.getName(), fileName);
 
 		 	if(isRemoved){
 				return "redirect:/user";
@@ -54,7 +51,20 @@ public class StorageController {
 			}
 	}
 
-	@GetMapping("/user/all-files")
+	@PostMapping("/create-dir/{name}")
+	public String createDir(@PathVariable("name") String name) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		if(name.length() > 0){
+			storageService.createDirectory(authentication.getName(), name);
+			return "redirect:/user";
+		} else {
+			return "redirect:/user";
+		}
+	}
+
+
+	@GetMapping("/all-files")
 	public ArrayList<BaseFile> getAllFiles() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		return storageService.getFileAndDirectoriesPaths(authentication.getName());

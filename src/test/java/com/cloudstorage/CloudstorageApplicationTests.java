@@ -48,9 +48,9 @@ public class CloudstorageApplicationTests {
 	}
 
 	@Test
-	public void testGetAllDirectoriesAndFilesMethod() throws IOException {
-		ArrayList<BaseFile> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths("/cloudstorage/kamkk");
-		fileAndDirectoriesPaths.forEach(System.out::println);
+	public void testGetAllDirectoriesAndFilesMethodAndIsBaseFileConstructorWorkingProperly() {
+		ArrayList<BaseFile> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths("kamkk");
+		fileAndDirectoriesPaths.forEach(element -> System.out.println(element.getFileName() + " " + element.getFileType() + " " + element.getFullPath()));
 
 	}
 
@@ -58,5 +58,21 @@ public class CloudstorageApplicationTests {
 	public void testValueOfBasePathInStorageServiceClass() {
 		assertEquals("/cloudstorage/", storageService.getBasePath());
 	}
+
+	@Test
+	public void fibonacciTest() {
+		System.out.println(fib(8));
+
+	}
+
+	public static int fib(int n) {
+		if ((n == 1) || (n == 2))
+			return 1;
+		else
+			return fib(n - 1) + fib(n - 2);
+
+	}
+
+
 
 }

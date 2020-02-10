@@ -20,7 +20,9 @@
     <div class="main-viewer">
 
         <div class="topper">
-            <h4>Top bar</h4>
+            <form>
+            <button type="submit" class="create-dir"><img src="https://img.icons8.com/cute-clipart/64/000000/add-folder.png"></button>
+            </form>
         </div>
 
         <!--        Left side content     -->
@@ -38,7 +40,7 @@
         <div class="side-viewer">
             <form action="/user/storage/upload" method="POST" enctype="multipart/form-data">
                 <input type="file" name="files" multiple>
-                <button type="submit">Upload File</button>
+                <button type="submit" class="upload-click">Upload File</button>
             </form>
         </div>
 

@@ -39,6 +39,7 @@ public class Users implements UserDetails {
 
 	private String directoryName;
 
+
 	private boolean isEnabled = false;
 	private boolean isCredentialsNonExpired = true;
 	private boolean isAccountNonExpired = true;
