@@ -1,7 +1,7 @@
 package com.cloudstorage.controllers;
 
 
-import com.cloudstorage.config.CheckAuthentication;
+import com.cloudstorage.config.UserAuthenticationFilter;
 import com.cloudstorage.model.BaseFile;
 import com.cloudstorage.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,12 @@ import java.util.ArrayList;
 public class HomeController {
 
 
-	private CheckAuthentication checkAuthentication;
+	private UserAuthenticationFilter checkAuthentication;
 
 	private StorageService storageService;
 
 	@Autowired
-	public HomeController(CheckAuthentication checkAuthentication, StorageService storageService) {
+	public HomeController(UserAuthenticationFilter checkAuthentication, StorageService storageService) {
 		this.checkAuthentication = checkAuthentication;
 		this.storageService = storageService;
 	}

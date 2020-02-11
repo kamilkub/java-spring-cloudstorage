@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 
 @Service
@@ -114,19 +115,24 @@ public class StorageService {
 	}
 
 	public boolean removeFileByName(String userDirectory, String fileName) {
-		try {
+		try{
 			Files.delete(Paths.get(getBasePath() + userDirectory + "/" + fileName));
 			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
+		}catch (Exception e) {
 			return false;
 		}
-
 	}
 
 
 	public String getBasePath() {
 		return basePath;
+	}
+
+	public boolean findFileByName(String authName, String fileName) {
+		ArrayList<BaseFile> fileAndDirectoriesPaths = getFileAndDirectoriesPaths(authName);
+		LinkedHashSet<String> fileNames = new LinkedHashSet<>();
+		fileAndDirectoriesPaths.forEach((file -> fileNames.add(file.getFileName())));
+		return fileNames.contains(fileName);
 	}
 
 

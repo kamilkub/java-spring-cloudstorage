@@ -86,12 +86,12 @@ public class SignUpController {
          Users user = signUpService.findByPin(pin);
 
          if(user == null){
-         		model.addAttribute("wrong-pin-number", true);
+         		model.addAttribute("wrongPing", true);
 
          	return "activatePage";
 		 }else{
          		signUpService.activateUser(user);
-         		model.addAttribute("activation-success", true);
+         		model.addAttribute("activationSuccess", true);
 
          	return "activatePage";
 		 }

@@ -6,14 +6,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CheckAuthentication {
+public class UserAuthenticationFilter {
 
-
-	public boolean isAuthenticated() {
-
+	public Authentication isAuthenticated() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return authentication != null && !(authentication instanceof AnonymousAuthenticationToken)
-				&& authentication.isAuthenticated();
+		if(!(authentication instanceof AnonymousAuthenticationToken))
+			return authentication;
+		else
+			return null;
 
 	}
 

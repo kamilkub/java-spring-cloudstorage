@@ -41,4 +41,6 @@ public class AuthenticationService implements UserDetailsService {
 
 		return new User(user.getUsername(), user.getPassword(), grantedAuth);
 	}
+
+
 }

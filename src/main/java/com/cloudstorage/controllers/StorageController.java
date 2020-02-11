@@ -1,15 +1,22 @@
 package com.cloudstorage.controllers;
 
 
+import com.cloudstorage.config.UserAuthenticationFilter;
 import com.cloudstorage.model.BaseFile;
 import com.cloudstorage.service.StorageService;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -18,30 +25,37 @@ import java.util.Arrays;
 @RequestMapping("/user")
 public class StorageController {
 
+	private UserAuthenticationFilter userAuthenticationFilter;
 
 	private StorageService storageService;
 
 	@Autowired
-	public StorageController(StorageService storageService) {
+	public StorageController(StorageService storageService, UserAuthenticationFilter userAuthenticationFilter) {
 		this.storageService = storageService;
+		this.userAuthenticationFilter = userAuthenticationFilter;
 	}
 
 	@PostMapping("/storage/upload")
 	public String storageUpload(@RequestParam("files") MultipartFile[] storageFile) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		if(storageFile.length != 0){
-			Arrays.stream(storageFile).forEach((multipartFile -> storageService.uploadFile(multipartFile, authentication.getName())));
-			System.out.println("Zapisane");
-		}
+		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
+
+		Arrays.stream(storageFile)
+				.forEach((multipartFile) -> {
+						if(!multipartFile.isEmpty() && authenticated != null)
+							storageService.uploadFile(multipartFile, authenticated.getName());
+		});
+
+
 		return "redirect:/user";
 	}
 
 	@PostMapping("/delete-file")
 	public String deleteFile(@RequestBody String fileName){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		boolean isRemoved = !fileName.isEmpty() && storageService.removeFileByName(authentication.getName(), fileName);
+		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
+
+		boolean isRemoved = (!fileName.isEmpty() && authenticated != null) && storageService.removeFileByName(authenticated.getName(), fileName);
 
 		 	if(isRemoved){
 				return "redirect:/user";
@@ -51,12 +65,13 @@ public class StorageController {
 			}
 	}
 
-	@PostMapping("/create-dir/{name}")
-	public String createDir(@PathVariable("name") String name) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	@PostMapping("/create-dir")
+	public String createDir(@RequestParam("dirName") String dirName) {
 
-		if(name.length() > 0){
-			storageService.createDirectory(authentication.getName(), name);
+		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
+
+		if(dirName.length() > 0 && authenticated != null){
+			storageService.createDirectory(authenticated.getName(), dirName);
 			return "redirect:/user";
 		} else {
 			return "redirect:/user";
@@ -66,8 +81,35 @@ public class StorageController {
 
 	@GetMapping("/all-files")
 	public ArrayList<BaseFile> getAllFiles() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return storageService.getFileAndDirectoriesPaths(authentication.getName());
+		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
+		return authenticated != null ? storageService.getFileAndDirectoriesPaths(authenticated.getName()) : null;
+	}
+
+	@SneakyThrows
+	@GetMapping("/download-file")
+	public ResponseEntity<Resource> shareFileUnderUrl(@RequestParam("fileName") String fileName) {
+		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
+		if(storageService.findFileByName(authenticated.getName(), fileName) && fileName.contains(".")) {
+			HttpHeaders header = new HttpHeaders();
+			header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+fileName.substring(fileName.lastIndexOf("/")+1));
+			header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+			header.add("Pragma", "no-cache");
+			header.add("Expires", "0");
+
+			ByteArrayResource resource =
+					new ByteArrayResource(Files.readAllBytes(Paths.get(storageService.getBasePath() + authenticated.getName() + fileName)));
+
+			return ResponseEntity.ok()
+					.headers(header)
+					.contentLength(resource.contentLength())
+					.contentType(MediaType.parseMediaType("application/octet-stream"))
+					.body(resource);
+		} else {
+
+			return null;
+		}
+
+
 	}
 
 
