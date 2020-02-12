@@ -1,6 +1,7 @@
 package com.cloudstorage.controllers;
 
 
+import com.cloudstorage.config.UserAuthenticationFilter;
 import com.cloudstorage.model.Users;
 import com.cloudstorage.service.SignUpService;
 import com.cloudstorage.service.StorageService;
@@ -23,23 +24,32 @@ public class SignUpController {
 
 	private StorageService storageService;
 
+	private UserAuthenticationFilter userAuthenticationFilter;
+
 
 	@Autowired
-	public SignUpController(SignUpService signUpService, StorageService storageService) {
+	public SignUpController(SignUpService signUpService, StorageService storageService, UserAuthenticationFilter userAuthenticationFilter) {
 		this.signUpService = signUpService;
 		this.storageService = storageService;
+		this.userAuthenticationFilter = userAuthenticationFilter;
 	}
 
 	@GetMapping("/sign-in")
 	public String showLoginPage(){
-		return "auth_templates/sign-in";
+		if(userAuthenticationFilter.isAuthenticatedBool())
+			return "redirect:/user";
+		else
+			return "auth_templates/sign-in";
 	}
 
 
 	@GetMapping("/sign-up")
 	public String signUpPage(Model model){
-		model.addAttribute("user", new Users());
-		return "auth_templates/sign-up";
+		if(userAuthenticationFilter.isAuthenticatedBool())
+			return "redirect:/user";
+		else
+			model.addAttribute("user", new Users());
+			return "auth_templates/sign-up";
 	}
 
 
@@ -53,8 +63,6 @@ public class SignUpController {
 			if (signUpService.findByEmail(user.getEmail()) != null && signUpService.findByUsername(user.getUsername()) != null) {
 				model.addAttribute("exists", true);
 				return "auth_templates/sign-up";
-
-
 
 			} else {
 
@@ -77,12 +85,11 @@ public class SignUpController {
 		}
 		return "auth_templates/sign-up";
 
-
 	}
+
 
 	@GetMapping("/activate")
 	public String activateUser(@RequestParam("pin") String pin, Model model){
-
          Users user = signUpService.findByPin(pin);
 
          if(user == null){

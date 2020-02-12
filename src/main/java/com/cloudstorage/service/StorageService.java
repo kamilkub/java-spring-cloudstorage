@@ -19,7 +19,9 @@ import java.util.Objects;
 public class StorageService {
 
 	@Value("${BASE_PATH}")
-	private String basePath;
+	private String basePathStorage;
+
+
 
 	public void uploadFile(MultipartFile storageFile, String userFolder) {
 
@@ -64,7 +66,7 @@ public class StorageService {
 
 
 		try {
-			Files.walkFileTree(Paths.get(getBasePath() + userDirectory), new FileVisitor<Path>() {
+			Files.walkFileTree(Paths.get(getBasePath() + userDirectory).normalize(), new FileVisitor<Path>() {
 
 				int counter = 0;
 				String stablePath = "\\cloudstorage\\" + userDirectory;
@@ -114,18 +116,14 @@ public class StorageService {
 
 	}
 
-	public boolean removeFileByName(String userDirectory, String fileName) {
-		try{
-			Files.delete(Paths.get(getBasePath() + userDirectory + "/" + fileName));
+	public boolean removeFileByName(String userDirectory, String fileName) throws IOException {
+		if(!fileName.isEmpty()) {
+			Files.delete(Paths.get(getBasePath() + userDirectory + "/" + fileName).normalize());
 			return true;
-		}catch (Exception e) {
+		} else {
 			return false;
 		}
-	}
 
-
-	public String getBasePath() {
-		return basePath;
 	}
 
 	public boolean findFileByName(String authName, String fileName) {
@@ -133,6 +131,10 @@ public class StorageService {
 		LinkedHashSet<String> fileNames = new LinkedHashSet<>();
 		fileAndDirectoriesPaths.forEach((file -> fileNames.add(file.getFileName())));
 		return fileNames.contains(fileName);
+	}
+
+	public String getBasePath() {
+		return basePathStorage;
 	}
 
 

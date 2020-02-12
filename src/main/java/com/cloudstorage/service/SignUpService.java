@@ -14,13 +14,13 @@ import java.util.Random;
 public class SignUpService {
 
 
-    @Autowired
 	private BCryptPasswordEncoder bcrypt;
 
 	private UsersRepository usersRepository;
 
 	@Autowired
-	public SignUpService(UsersRepository usersRepository){
+	public SignUpService(BCryptPasswordEncoder bcrypt, UsersRepository usersRepository){
+		this.bcrypt = bcrypt;
 		this.usersRepository = usersRepository;
 	}
 
@@ -29,9 +29,9 @@ public class SignUpService {
 		usersRepository.save(user);
 	}
 
-	public Users activateUser(Users user){
+	public void activateUser(Users user){
 		user.setEnabled(true);
-		return usersRepository.save(user);
+		usersRepository.save(user);
 	}
 
 

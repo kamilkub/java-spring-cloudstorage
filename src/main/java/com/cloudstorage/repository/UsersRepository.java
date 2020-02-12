@@ -12,6 +12,4 @@ public interface UsersRepository extends MongoRepository<Users, String> {
     Users findByEmail(String email);
     Users findByPin(String pin);
 
-
-
 }

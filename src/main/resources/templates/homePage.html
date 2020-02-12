@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/css/user-menu.css">
     <link rel="stylesheet" href="/css/sidebar.css">
     <title>Cloud Service</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 </head>
 <body>
 
@@ -18,7 +19,6 @@
     <div th:replace="/usermenu/sidebar"></div>
 
     <div class="main-viewer">
-
         <div class="topper">
             <button class="create-dir"><img src="https://img.icons8.com/cute-clipart/64/000000/add-folder.png"></button>
         </div>
@@ -36,10 +36,10 @@
         <!--        Right side content     -->
 
         <div class="side-viewer">
-            <form action="/user/storage/upload" method="POST" enctype="multipart/form-data">
-                <input type="file" name="files" multiple>
-                <button type="submit" class="upload-click">Upload File</button>
-            </form>
+            <div class="drop-container">
+                <input type="file" name="files" id="files" multiple>
+                <h1 class="info-h1">Drop or click here to upload</h1>
+            </div>
         </div>
 
     </div>
@@ -47,7 +47,6 @@
 </div>
 
 
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="/js/uploader-storage.js"></script>
 </body>
 </html>

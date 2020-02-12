@@ -6,7 +6,6 @@ import com.cloudstorage.model.BaseFile;
 import com.cloudstorage.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,35 +17,35 @@ import java.util.ArrayList;
 public class HomeController {
 
 
-	private UserAuthenticationFilter checkAuthentication;
+	private UserAuthenticationFilter userAuthenticationFilter;
 
 	private StorageService storageService;
 
 	@Autowired
-	public HomeController(UserAuthenticationFilter checkAuthentication, StorageService storageService) {
-		this.checkAuthentication = checkAuthentication;
+	public HomeController(UserAuthenticationFilter userAuthenticationFilter, StorageService storageService) {
+		this.userAuthenticationFilter = userAuthenticationFilter;
 		this.storageService = storageService;
 	}
 
 	@GetMapping(value = {"/user", "/user/files"})
 	public String homePage(Model model){
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication = userAuthenticationFilter.isAuthenticated();
 
 		ArrayList<BaseFile> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths(authentication.getName());
 		model.addAttribute("files", fileAndDirectoriesPaths);
+
 
 		return "homePage";
 	}
 
 	@GetMapping(value = {"/", "/home"})
 	public String welcomePage(){
+		if(userAuthenticationFilter.isAuthenticatedBool())
+	   		return "redirect:/user";
+		else
+			return "welcomePage";
 
-//		if(checkAuthentication.isAuthenticated()){
-//	   		return "redirect:/user";
-//		}
-
-		return "welcomePage";
 	}
 
 

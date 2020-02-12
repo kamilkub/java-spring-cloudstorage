@@ -17,5 +17,10 @@ public class UserAuthenticationFilter {
 
 	}
 
+	public boolean isAuthenticatedBool() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return !(authentication instanceof AnonymousAuthenticationToken);
+	}
+
 
 }

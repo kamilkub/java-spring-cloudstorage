@@ -2,19 +2,20 @@ package com.cloudstorage.controllers;
 
 
 import com.cloudstorage.config.UserAuthenticationFilter;
+import com.cloudstorage.exceptions.MessageAdvice;
 import com.cloudstorage.model.BaseFile;
 import com.cloudstorage.service.StorageService;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class StorageController {
 		this.userAuthenticationFilter = userAuthenticationFilter;
 	}
 
+
 	@PostMapping("/storage/upload")
 	public String storageUpload(@RequestParam("files") MultipartFile[] storageFile) {
 
@@ -50,20 +52,22 @@ public class StorageController {
 		return "redirect:/user";
 	}
 
+
+
 	@PostMapping("/delete-file")
-	public String deleteFile(@RequestBody String fileName){
+	public String deleteFile(@RequestBody String fileName) throws IOException {
 
 		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
 
-		boolean isRemoved = (!fileName.isEmpty() && authenticated != null) && storageService.removeFileByName(authenticated.getName(), fileName);
+		if (authenticated != null)
+			if (storageService.removeFileByName(authenticated.getName(), fileName))
+				return "redirect:/user";
 
-		 	if(isRemoved){
-				return "redirect:/user";
-			} else {
-				System.out.println(">>>>>>>>> 404");
-				return "redirect:/user";
-			}
+		return "redirect:/user";
 	}
+
+
+
 
 	@PostMapping("/create-dir")
 	public String createDir(@RequestParam("dirName") String dirName) {
@@ -79,19 +83,23 @@ public class StorageController {
 	}
 
 
+
 	@GetMapping("/all-files")
 	public ArrayList<BaseFile> getAllFiles() {
 		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
 		return authenticated != null ? storageService.getFileAndDirectoriesPaths(authenticated.getName()) : null;
 	}
 
-	@SneakyThrows
+
+
+
 	@GetMapping("/download-file")
-	public ResponseEntity<Resource> shareFileUnderUrl(@RequestParam("fileName") String fileName) {
+	public ResponseEntity shareFileUnderUrl(@RequestParam("fileName") String fileName) throws IOException {
 		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
+
 		if(storageService.findFileByName(authenticated.getName(), fileName) && fileName.contains(".")) {
 			HttpHeaders header = new HttpHeaders();
-			header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+fileName.substring(fileName.lastIndexOf("/")+1));
+			header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName.substring(fileName.lastIndexOf("/")+1));
 			header.add("Cache-Control", "no-cache, no-store, must-revalidate");
 			header.add("Pragma", "no-cache");
 			header.add("Expires", "0");
@@ -106,7 +114,7 @@ public class StorageController {
 					.body(resource);
 		} else {
 
-			return null;
+			return ResponseEntity.badRequest().body(new MessageAdvice(HttpStatus.NOT_FOUND, "Selected file is a directory or has not been found"));
 		}
 
 
