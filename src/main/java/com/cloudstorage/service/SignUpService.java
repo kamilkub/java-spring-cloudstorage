@@ -26,6 +26,7 @@ public class SignUpService {
 
 	public void signUpUser(Users user){
 		user.setPassword(bcrypt.encode(user.getPassword()));
+		user.setDirectoryName(user.getUsername() + "/");
 		usersRepository.save(user);
 	}
 

@@ -3,12 +3,14 @@ package com.cloudstorage.model;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Collection;
@@ -16,34 +18,40 @@ import java.util.Collections;
 import java.util.Date;
 
 @Document
-public class Users implements UserDetails {
+public class Users implements UserDetails, Persistable<String> {
 
 	@Id
 	private String id;
 
 	@Email
-	@NotNull(message = "Email is empty")
+	@NotEmpty(message = "Email is empty")
 	private String email;
 
-	@NotNull(message = "Username is empty")
+	@NotEmpty(message = "Username is empty")
 	private String username;
 
-	@NotNull(message = "Password is empty")
+	@NotEmpty(message = "Password is empty")
 	@Size(min = 6, message = "Password must be at least 6 characters long")
 	private String password;
 
 	@CreatedDate
 	private Date createdDate;
 
+	private long diskSpace = 125000000;
+
 	private String pin;
 
 	private String directoryName;
 
-
 	private boolean isEnabled = false;
+
 	private boolean isCredentialsNonExpired = true;
+
 	private boolean isAccountNonExpired = true;
+
 	private boolean isAccountNonLocked = true;
+
+	private boolean persisted;
 
 
 	public void setEnabled(boolean enabled) {
@@ -66,6 +74,22 @@ public class Users implements UserDetails {
 		this.username = username;
 	}
 
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public long getDiskSpace() {
+		return diskSpace;
+	}
+
+	public void setDiskSpace(long diskSpace) {
+		this.diskSpace = diskSpace;
+	}
+
 	@Override
 	public boolean isAccountNonExpired() {
 		return isAccountNonExpired;
@@ -84,6 +108,11 @@ public class Users implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return isEnabled;
+	}
+
+	@Override
+	public boolean isNew() {
+		return !persisted;
 	}
 
 
@@ -106,6 +135,10 @@ public class Users implements UserDetails {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public void setPersisted(boolean persisted) {
+		this.persisted = persisted;
 	}
 
 

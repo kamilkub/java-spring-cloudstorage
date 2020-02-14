@@ -171,6 +171,7 @@ function uploadFiles(uploadData) {
 
 
         uploadRequest.done((msg) => {
+            console.log(msg);
             $("button[type='submit']").prop('disabled', false);
             $("input[type='file']").val('');
             $('.drop-container').css("background", "grey");
@@ -179,8 +180,11 @@ function uploadFiles(uploadData) {
 
         uploadRequest.fail((error) => {
             $("button[type='submit']").prop('disabled', false);
-            alert(error.responseText);
 
+            if(error.status === 406){
+                alert('Not enough space, we only offer 1GB!');
+                getAllFilesAndRender();
+            }
             if(error.status === 500){
                 alert('This file already exists');
                 $("input[type='file']").val('');

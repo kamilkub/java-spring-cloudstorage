@@ -18,16 +18,9 @@
         Provided email or username is already taken!
     </div>
 
-
-    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="alert alert-danger" >
+    <div th:each="error : ${listOfErrors}">
+        <div th:text="${error}" class="alert alert-danger"></div>
     </div>
-
-    <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="alert alert-danger" >
-    </div>
-
-    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="alert alert-danger">
-    </div>
-
 
     <div class="text-center mb-4">
         <img class="mb-4" src="/image/icon.png" alt="" width="140" height="140">

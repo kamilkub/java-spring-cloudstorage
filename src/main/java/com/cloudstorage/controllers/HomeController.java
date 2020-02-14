@@ -18,7 +18,6 @@ public class HomeController {
 
 
 	private UserAuthenticationFilter userAuthenticationFilter;
-
 	private StorageService storageService;
 
 	@Autowired
@@ -31,13 +30,14 @@ public class HomeController {
 	public String homePage(Model model){
 
 		Authentication authentication = userAuthenticationFilter.isAuthenticated();
-
 		ArrayList<BaseFile> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths(authentication.getName());
+
 		model.addAttribute("files", fileAndDirectoriesPaths);
 
 
 		return "homePage";
 	}
+
 
 	@GetMapping(value = {"/", "/home"})
 	public String welcomePage(){

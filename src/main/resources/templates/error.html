@@ -6,7 +6,23 @@
 </head>
 <body>
 
-    <h1>Something went wrong</h1>
+    <p>Something is wrong.. Please wait, we will redirect you in a second. <span class="time">3</span> </p>
 
+    <script>
+        var a = 3;
+
+        var timer = setInterval(() => {
+            a -= 1;
+            document.querySelector('.time').textContent = a;
+            if (a === 0) {
+                redirect();
+                clearInterval(timer);
+            }
+        }, 1000);
+
+        function redirect() {
+            document.location.href = "/home";
+        }
+    </script>
 </body>
 </html>

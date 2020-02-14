@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 @Controller
 public class SignUpController {
@@ -57,8 +62,12 @@ public class SignUpController {
 	public String signUpUser(@Valid @ModelAttribute("user") Users user, BindingResult result, Model model) throws IOException {
 
 		if (result.hasErrors()) {
+			List<String> errorMessages = new ArrayList<>();
 
-		} else {
+			result.getAllErrors().forEach((objectError -> errorMessages.add(objectError.getDefaultMessage())));
+
+			model.addAttribute("listOfErrors", errorMessages);
+		}else {
 
 			if (signUpService.findByEmail(user.getEmail()) != null && signUpService.findByUsername(user.getUsername()) != null) {
 				model.addAttribute("exists", true);
@@ -74,6 +83,7 @@ public class SignUpController {
 
 				user.setDirectoryName(user.getUsername());
 				user.setPin(stringPin);
+				user.setPersisted(true);
 				signUpService.signUpUser(user);
 				storageService.init(user.getUsername());
 
@@ -81,8 +91,8 @@ public class SignUpController {
 
 
 			}
-
 		}
+
 		return "auth_templates/sign-up";
 
 	}

@@ -2,6 +2,8 @@ package com.cloudstorage.service;
 
 
 import com.cloudstorage.model.BaseFile;
+import com.cloudstorage.repository.UsersRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +23,13 @@ public class StorageService {
 	@Value("${BASE_PATH}")
 	private String basePathStorage;
 
+	private UsersRepository usersRepository;
 
+
+	@Autowired
+	public StorageService(UsersRepository usersRepository) {
+		this.usersRepository = usersRepository;
+	}
 
 	public void uploadFile(MultipartFile storageFile, String userFolder) {
 
@@ -126,6 +134,54 @@ public class StorageService {
 
 	}
 
+	private boolean hasAvailableSpace(String userDirectory, long userDiskSpace) {
+		Path path = Paths.get(getBasePath() + userDirectory);
+
+		long actualUserFolder = getFolderSize(path);
+
+		return actualUserFolder < userDiskSpace;
+
+	}
+
+	private long getAvailableSpace(String userDirectory, long userDiskSpace) {
+		Path path = Paths.get(getBasePath() + userDirectory);
+		long actualUserFolder = getFolderSize(path);
+
+
+		if(hasAvailableSpace(userDirectory, userDiskSpace)) {
+			return userDiskSpace - actualUserFolder;
+		} else {
+			return 0;
+		}
+
+	}
+
+	public boolean isEnoughSpace(String userDirectory, String username, long fileSize) {
+
+		long userDiskSpace = usersRepository.findByUsername(username).getDiskSpace();
+
+		long availableSpace = getAvailableSpace(userDirectory, userDiskSpace);
+
+		return availableSpace >= fileSize;
+	}
+
+	private long getFolderSize(Path path) {
+
+		long size = 0;
+
+		for(File file : Objects.requireNonNull(path.toFile().listFiles())){
+			if(file.isFile()) {
+				size += file.length();
+			} else {
+				size += getFolderSize(file.toPath());
+			}
+		}
+
+		return size;
+
+	}
+
+
 	public boolean findFileByName(String authName, String fileName) {
 		ArrayList<BaseFile> fileAndDirectoriesPaths = getFileAndDirectoriesPaths(authName);
 		LinkedHashSet<String> fileNames = new LinkedHashSet<>();
@@ -136,6 +192,9 @@ public class StorageService {
 	public String getBasePath() {
 		return basePathStorage;
 	}
+
+
+
 
 
 }

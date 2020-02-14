@@ -12,14 +12,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 @RestController
@@ -37,19 +40,27 @@ public class StorageController {
 	}
 
 
+
 	@PostMapping("/storage/upload")
-	public String storageUpload(@RequestParam("files") MultipartFile[] storageFile) {
+	public void storageUpload(@RequestParam("files") MultipartFile[] storageFile, Model model, HttpServletResponse response) {
 
 		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
+		AtomicBoolean isAvailableSpace = new AtomicBoolean(true);
 
 		Arrays.stream(storageFile)
 				.forEach((multipartFile) -> {
-						if(!multipartFile.isEmpty() && authenticated != null)
+						if(!multipartFile.isEmpty()
+								&& authenticated != null
+								&& storageService.isEnoughSpace(authenticated.getName(), authenticated.getName(), multipartFile.getSize()))
 							storageService.uploadFile(multipartFile, authenticated.getName());
+						else
+							isAvailableSpace.set(false);
 		});
 
+		if(!isAvailableSpace.get()) {
+			response.setStatus(406);
+		}
 
-		return "redirect:/user";
 	}
 
 
