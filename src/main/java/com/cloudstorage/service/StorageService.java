@@ -3,6 +3,7 @@ package com.cloudstorage.service;
 
 import com.cloudstorage.model.BaseFile;
 import com.cloudstorage.repository.UsersRepository;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -125,6 +126,7 @@ public class StorageService {
 	}
 
 	public boolean removeFileByName(String userDirectory, String fileName) throws IOException {
+
 		if(!fileName.isEmpty()) {
 			Files.delete(Paths.get(getBasePath() + userDirectory + "/" + fileName).normalize());
 			return true;
@@ -134,6 +136,26 @@ public class StorageService {
 
 	}
 
+	public boolean removeDirectory(String userDirectory, String folderName) {
+
+		File userDir = new File(getBasePath() + userDirectory + "/" + folderName);
+
+		if(userDir.isDirectory() && userDir.exists()){
+			try {
+				FileUtils.deleteDirectory(userDir);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return true;
+		}else {
+			return false;
+		}
+
+ 	}
+
+
+
+
 	private boolean hasAvailableSpace(String userDirectory, long userDiskSpace) {
 		Path path = Paths.get(getBasePath() + userDirectory);
 
@@ -142,6 +164,7 @@ public class StorageService {
 		return actualUserFolder < userDiskSpace;
 
 	}
+
 
 	private long getAvailableSpace(String userDirectory, long userDiskSpace) {
 		Path path = Paths.get(getBasePath() + userDirectory);
@@ -165,20 +188,19 @@ public class StorageService {
 		return availableSpace >= fileSize;
 	}
 
-	private long getFolderSize(Path path) {
-
+	public long getFolderSize(Path path) {
 		long size = 0;
 
-		for(File file : Objects.requireNonNull(path.toFile().listFiles())){
-			if(file.isFile()) {
-				size += file.length();
-			} else {
-				size += getFolderSize(file.toPath());
+	 	if(path.toFile().exists())
+			for(File file : Objects.requireNonNull(path.toFile().listFiles())){
+				if(file.isFile()) {
+					size += file.length();
+				} else {
+					size += getFolderSize(file.toPath());
+				}
 			}
-		}
 
 		return size;
-
 	}
 
 

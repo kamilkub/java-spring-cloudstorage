@@ -8,18 +8,21 @@ function getAllFilesAndRender () {
         var renderData = "";
         var fileTypeIcon = "";
         var createDirInDir = "";
+        var deleteClass = "";
         for(var i = 0; i < data.length; i++) {
         if(data[i].fileType === "dir"){
             fileTypeIcon = "<img src='https://img.icons8.com/officel/30/000000/delete-folder.png'>";
             createDirInDir = "<img src='https://img.icons8.com/office/30/000000/add-folder.png'>";
+            deleteClass = 'remove-dir';
         } else {
             fileTypeIcon = "<img src='https://img.icons8.com/office/30/000000/delete-file.png'>";
             createDirInDir = "";
+            deleteClass = 'remove-click';
         }
          renderData += "<tr>"+
                             "<td>"+data[i].fileName+"</td>"+
                             "<td>"+
-                            "<a class='remove-click' data='"+data[i].fileName+"'>"+
+                            "<a class='" + deleteClass + "' data='"+data[i].fileName+"'>"+
                             fileTypeIcon +
                             "</a>"+
                             "</td>"+
@@ -36,6 +39,7 @@ function getAllFilesAndRender () {
         }
         $('.render-files').html(renderData);
         makeFilesRemovable();
+        makesDirectoriesRemovable();
         letCreateDirsInDir();
 
     });
@@ -195,8 +199,38 @@ function uploadFiles(uploadData) {
 
 
  /*
-    @@   Delete AJAX Request - By file name
+    @@   Delete AJAX Request - By file name AND @@ Delete AJAX Request - Entire Directory
  */
+
+ function makesDirectoriesRemovable() {
+       $('.remove-dir').click((e) => {
+            e.preventDefault();
+            let dirName = $(e.currentTarget).attr('data');
+
+            if(confirm("Sure you want to delete this directory and all its files?") && dirName != undefined){
+                   const deleteDirRequest = $.ajax({
+                        url: '/user/delete-dir',
+                        type: 'POST',
+                        data: dirName,
+                        cache: false,
+                        contentType: false,
+                        processData: false
+                   });
+
+                    deleteDirRequest.done((msg) => {
+                        getAllFilesAndRender();
+                        console.log("Dir deleted");
+                    });
+
+                    deleteDirRequest.fail((error) => {
+                        alert(error.responseText);
+
+                    });
+            }
+
+       });
+
+ }
 
   function makeFilesRemovable() {
     $('.remove-click').click((e) => {

@@ -1,0 +1,36 @@
+input {
+    display:block;
+    width: 60%;
+    height:50px;
+    padding:4%;
+    font-size:20px;
+    margin:5% auto;
+}
+
+.colourel{
+    background:#486BAB;
+    height:500px;
+}
+
+.colourelTwo {
+    background: grey;
+    height:500px;
+}
+
+#progress-bar {
+    margin:12% auto;
+    text-align:center;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.btn {
+    width:50%;
+    margin:auto;
+}
+
+.text {
+    text-align:center;
+    color:white;
+}

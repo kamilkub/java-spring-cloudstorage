@@ -37,7 +37,7 @@ public class Users implements UserDetails, Persistable<String> {
 	@CreatedDate
 	private Date createdDate;
 
-	private long diskSpace = 125000000;
+	private long diskSpace = 1080000000;
 
 	private String pin;
 

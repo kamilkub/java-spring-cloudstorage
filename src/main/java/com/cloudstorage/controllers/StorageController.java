@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -72,6 +73,17 @@ public class StorageController {
 
 		if (authenticated != null)
 			if (storageService.removeFileByName(authenticated.getName(), fileName))
+				return "redirect:/user";
+
+		return "redirect:/user";
+	}
+
+	@PostMapping("/delete-dir")
+	public String deleteDir(@RequestBody String dirName) {
+		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
+
+		if (authenticated != null)
+			if (storageService.removeDirectory(authenticated.getName(), dirName))
 				return "redirect:/user";
 
 		return "redirect:/user";

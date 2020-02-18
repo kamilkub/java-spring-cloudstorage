@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+
 import static org.junit.Assert.assertTrue;
 
 
@@ -19,8 +22,19 @@ public class StorageServiceTest {
 
 
     @Test
-    public void testisEnoughSpaceForUpload() {
+    public void testIsEnoughSpaceForUpload() {
         assertTrue("You cannot download this file cause it's bigger than available space", storageService.isEnoughSpace("kamkk", "kamkk", 50000));
+    }
+
+    @Test
+    public void testRecursiveFolderDelete() throws IOException {
+        assertTrue("Folder has not been deleted", storageService.removeDirectory("kamkk", "pies"));
+
+    }
+
+    @Test
+    public void testMethodGetFolderSize() {
+        System.out.println(storageService.getFolderSize(Paths.get(storageService.getBasePath() + "kamkk")));
     }
 
 
