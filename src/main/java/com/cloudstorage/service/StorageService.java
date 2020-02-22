@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 
@@ -128,7 +129,7 @@ public class StorageService {
 	public boolean removeFileByName(String userDirectory, String fileName) throws IOException {
 
 		if(!fileName.isEmpty()) {
-			Files.delete(Paths.get(getBasePath() + userDirectory + "/" + fileName).normalize());
+			Files.delete(Paths.get(getBasePath() + userDirectory + File.separator + fileName).normalize());
 			return true;
 		} else {
 			return false;
@@ -138,7 +139,7 @@ public class StorageService {
 
 	public boolean removeDirectory(String userDirectory, String folderName) {
 
-		File userDir = new File(getBasePath() + userDirectory + "/" + folderName);
+		File userDir = new File(getBasePath() + userDirectory + File.separator + folderName);
 
 		if(userDir.isDirectory() && userDir.exists()){
 			try {

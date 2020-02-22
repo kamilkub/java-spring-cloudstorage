@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -26,13 +29,28 @@ public class SignUpService {
 
 	public void signUpUser(Users user){
 		user.setPassword(bcrypt.encode(user.getPassword()));
-		user.setDirectoryName(user.getUsername() + "/");
+		user.setDirectoryName(user.getUsername() + File.separator);
+
 		usersRepository.save(user);
 	}
 
 	public void activateUser(Users user){
 		user.setEnabled(true);
 		usersRepository.save(user);
+	}
+
+
+	/*
+	*  Under implementation, trying to figure out how to put this method under  */
+
+	public void activateUser(String pinNumber){
+		Optional<Users> user = Optional.ofNullable(findByPin(pinNumber));
+
+		user.ifPresentOrElse(userEnable -> {
+					userEnable.setEnabled(true);
+					usersRepository.save(userEnable);
+
+		}, () -> {  });
 	}
 
 

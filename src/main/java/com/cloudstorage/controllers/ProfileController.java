@@ -32,7 +32,7 @@ public class ProfileController {
     @GetMapping("/profile-data")
     @ResponseBody
     public UserProfile getUserProfileData() {
-        return profileService.getUsersProfileData(authenticationFilter.isAuthenticated().getName());
+        return profileService.getUsersProfileData(authenticationFilter.getAuthenticationUsername());
     }
 
 }

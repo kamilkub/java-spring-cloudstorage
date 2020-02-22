@@ -103,13 +103,12 @@ public class SignUpController {
          Users user = signUpService.findByPin(pin);
 
          if(user == null){
-         		model.addAttribute("wrongPing", true);
-
+			model.addAttribute("wrongPing", true);
          	return "activatePage";
-		 }else{
-         		signUpService.activateUser(user);
-         		model.addAttribute("activationSuccess", true);
 
+		 } else {
+			signUpService.activateUser(user);
+			model.addAttribute("activationSuccess", true);
          	return "activatePage";
 		 }
 

@@ -28,12 +28,8 @@ public class HomeController {
 
 	@GetMapping(value = {"/user", "/user/files"})
 	public String homePage(Model model){
-
-		Authentication authentication = userAuthenticationFilter.isAuthenticated();
-		ArrayList<BaseFile> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths(authentication.getName());
-
+		ArrayList<BaseFile> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths(userAuthenticationFilter.getAuthenticationUsername());
 		model.addAttribute("files", fileAndDirectoriesPaths);
-
 
 		return "homePage";
 	}

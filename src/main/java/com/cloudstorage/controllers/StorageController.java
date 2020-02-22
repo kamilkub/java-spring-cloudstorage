@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 
 @RestController
@@ -41,19 +42,26 @@ public class StorageController {
 	}
 
 
+	public Predicate<MultipartFile> uploadPredicate(String username) {
+		return file -> !file.isEmpty() && userAuthenticationFilter.isAuthenticatedBool() && storageService.isEnoughSpace(username, username, file.getSize());
+	}
+
 
 	@PostMapping("/storage/upload")
 	public void storageUpload(@RequestParam("files") MultipartFile[] storageFile, Model model, HttpServletResponse response) {
 
-		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
 		AtomicBoolean isAvailableSpace = new AtomicBoolean(true);
+
+//		Arrays.stream(storageFile)
+//				.filter(uploadPredicate(userAuthenticationFilter.getAuthenticationUsername()))
+//				.forEach(multipartFile -> storageService.uploadFile(multipartFile, userAuthenticationFilter.getAuthenticationUsername()));
 
 		Arrays.stream(storageFile)
 				.forEach((multipartFile) -> {
 						if(!multipartFile.isEmpty()
-								&& authenticated != null
-								&& storageService.isEnoughSpace(authenticated.getName(), authenticated.getName(), multipartFile.getSize()))
-							storageService.uploadFile(multipartFile, authenticated.getName());
+								&& userAuthenticationFilter.isAuthenticatedBool()
+								&& storageService.isEnoughSpace(userAuthenticationFilter.getAuthenticationUsername(), userAuthenticationFilter.getAuthenticationUsername(), multipartFile.getSize()))
+							storageService.uploadFile(multipartFile, userAuthenticationFilter.getAuthenticationUsername());
 						else
 							isAvailableSpace.set(false);
 		});
@@ -69,10 +77,8 @@ public class StorageController {
 	@PostMapping("/delete-file")
 	public String deleteFile(@RequestBody String fileName) throws IOException {
 
-		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
-
-		if (authenticated != null)
-			if (storageService.removeFileByName(authenticated.getName(), fileName))
+		if (userAuthenticationFilter.isAuthenticatedBool() && !fileName.isEmpty())
+			if (storageService.removeFileByName(userAuthenticationFilter.getAuthenticationUsername(), fileName))
 				return "redirect:/user";
 
 		return "redirect:/user";
@@ -80,10 +86,9 @@ public class StorageController {
 
 	@PostMapping("/delete-dir")
 	public String deleteDir(@RequestBody String dirName) {
-		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
 
-		if (authenticated != null)
-			if (storageService.removeDirectory(authenticated.getName(), dirName))
+		if (userAuthenticationFilter.isAuthenticatedBool())
+			if (storageService.removeDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName))
 				return "redirect:/user";
 
 		return "redirect:/user";
@@ -95,10 +100,8 @@ public class StorageController {
 	@PostMapping("/create-dir")
 	public String createDir(@RequestParam("dirName") String dirName) {
 
-		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
-
-		if(dirName.length() > 0 && authenticated != null){
-			storageService.createDirectory(authenticated.getName(), dirName);
+		if(dirName.length() > 0 && userAuthenticationFilter.isAuthenticatedBool()){
+			storageService.createDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName);
 			return "redirect:/user";
 		} else {
 			return "redirect:/user";
@@ -109,8 +112,8 @@ public class StorageController {
 
 	@GetMapping("/all-files")
 	public ArrayList<BaseFile> getAllFiles() {
-		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
-		return authenticated != null ? storageService.getFileAndDirectoriesPaths(authenticated.getName()) : null;
+		return userAuthenticationFilter.isAuthenticatedBool() ?
+				storageService.getFileAndDirectoriesPaths(userAuthenticationFilter.getAuthenticationUsername()) : null;
 	}
 
 
@@ -118,9 +121,8 @@ public class StorageController {
 
 	@GetMapping("/download-file")
 	public ResponseEntity shareFileUnderUrl(@RequestParam("fileName") String fileName) throws IOException {
-		Authentication authenticated = userAuthenticationFilter.isAuthenticated();
 
-		if(storageService.findFileByName(authenticated.getName(), fileName) && fileName.contains(".")) {
+		if(storageService.findFileByName(userAuthenticationFilter.getAuthenticationUsername(), fileName) && fileName.contains(".")) {
 			HttpHeaders header = new HttpHeaders();
 			header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName.substring(fileName.lastIndexOf("/")+1));
 			header.add("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -128,7 +130,8 @@ public class StorageController {
 			header.add("Expires", "0");
 
 			ByteArrayResource resource =
-					new ByteArrayResource(Files.readAllBytes(Paths.get(storageService.getBasePath() + authenticated.getName() + fileName)));
+					new ByteArrayResource
+							(Files.readAllBytes(Paths.get(storageService.getBasePath() + userAuthenticationFilter.getAuthenticationUsername() + fileName)));
 
 			return ResponseEntity.ok()
 					.headers(header)
