@@ -47,6 +47,11 @@
 
  });
 
+ $('#update-button').click((e) => {
+    e.preventDefault();
+
+ });
+
 
  function createBar(percent) {
     $('#progress-bar').circleProgress({

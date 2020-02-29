@@ -28,7 +28,7 @@ import java.util.function.Predicate;
 
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/user/storage")
 public class StorageController {
 
 	private UserAuthenticationFilter userAuthenticationFilter;
@@ -42,19 +42,11 @@ public class StorageController {
 	}
 
 
-	public Predicate<MultipartFile> uploadPredicate(String username) {
-		return file -> !file.isEmpty() && userAuthenticationFilter.isAuthenticatedBool() && storageService.isEnoughSpace(username, username, file.getSize());
-	}
 
-
-	@PostMapping("/storage/upload")
+	@PostMapping("/upload")
 	public void storageUpload(@RequestParam("files") MultipartFile[] storageFile, Model model, HttpServletResponse response) {
 
 		AtomicBoolean isAvailableSpace = new AtomicBoolean(true);
-
-//		Arrays.stream(storageFile)
-//				.filter(uploadPredicate(userAuthenticationFilter.getAuthenticationUsername()))
-//				.forEach(multipartFile -> storageService.uploadFile(multipartFile, userAuthenticationFilter.getAuthenticationUsername()));
 
 		Arrays.stream(storageFile)
 				.forEach((multipartFile) -> {
@@ -112,6 +104,7 @@ public class StorageController {
 
 	@GetMapping("/all-files")
 	public ArrayList<BaseFile> getAllFiles() {
+		System.out.println("Authenticated directory >>> : " + userAuthenticationFilter.getAuthenticatedDirectory());
 		return userAuthenticationFilter.isAuthenticatedBool() ?
 				storageService.getFileAndDirectoriesPaths(userAuthenticationFilter.getAuthenticationUsername()) : null;
 	}

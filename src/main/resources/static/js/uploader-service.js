@@ -4,7 +4,7 @@
 */
 
 function getAllFilesAndRender () {
-    $.get("/user/all-files", (data, status) => {
+    $.get("/user/storage/all-files", (data, status) => {
         var renderData = "";
         var fileTypeIcon = "";
         var createDirInDir = "";
@@ -32,7 +32,7 @@ function getAllFilesAndRender () {
                             "</a>" +
                             "</td>" +
                             "<td>"+
-                            "<a href='/user/download-file?fileName="+data[i].fileName+"'>" +
+                            "<a href='/user/storage/download-file?fileName="+data[i].fileName+"'>" +
                             "<img src='https://img.icons8.com/ultraviolet/30/000000/download.png'>" + "</a>" +
                             "</td>"
                         +"</tr>"
@@ -61,7 +61,7 @@ function letCreateDirsInDir() {
       let parentDirectory = $(e.currentTarget).attr('data');
       let fullPath = parentDirectory + childDirectoryName;
 
-      const childDirRequest = $.post('/user/create-dir', {dirName: fullPath}, (response) => {
+      const childDirRequest = $.post('/user/storage/create-dir', {dirName: fullPath}, (response) => {
                   console.log(response);
       });
 
@@ -89,7 +89,7 @@ $('.create-dir').click((e) => {
     let directoryName = prompt("Directory name: ");
 
     if(directoryName.length > 0) {
-        const createDirRequest = $.post('/user/create-dir', {dirName: directoryName}, (response) => {
+        const createDirRequest = $.post('/user/storage/create-dir', {dirName: directoryName}, (response) => {
                 console.log(response);
         });
 
@@ -209,7 +209,7 @@ function uploadFiles(uploadData) {
 
             if(confirm("Sure you want to delete this directory and all its files?") && dirName != undefined){
                    const deleteDirRequest = $.ajax({
-                        url: '/user/delete-dir',
+                        url: '/user/storage/delete-dir',
                         type: 'POST',
                         data: dirName,
                         cache: false,
@@ -239,7 +239,7 @@ function uploadFiles(uploadData) {
 
           if(confirm("Sure you want to delete this file?") && fileName != undefined){
               const deleteRequest = $.ajax({
-                  url: '/user/delete-file/',
+                  url: '/user/storage/delete-file',
                   type: 'POST',
                   data: fileName,
                   cache: false,

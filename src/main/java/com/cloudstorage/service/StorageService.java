@@ -3,6 +3,7 @@ package com.cloudstorage.service;
 
 import com.cloudstorage.model.BaseFile;
 import com.cloudstorage.repository.UsersRepository;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,9 +16,10 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 @Service
 public class StorageService {
@@ -46,9 +48,6 @@ public class StorageService {
 
 	}
 
-	/*
-	  $ init() method - creates new folder for signed up user
-	 */
 
 	public void init(String userDirectory) {
 
@@ -74,50 +73,49 @@ public class StorageService {
 
 		ArrayList<BaseFile> userDirectoriesAndFiles = new ArrayList<>();
 
-
 		try {
-			Files.walkFileTree(Paths.get(getBasePath() + userDirectory).normalize(), new FileVisitor<Path>() {
+			Files.walkFileTree(Paths.get(getBasePath() + userDirectory).normalize(), new SimpleFileVisitor<>() {
+					int counter = 0;
+					String stablePath = "\\cloudstorage\\" + userDirectory;
+					String realPath = "";
+					String fullPath = "";
 
-				int counter = 0;
-				String stablePath = "\\cloudstorage\\" + userDirectory;
-				String realPath = "";
-				String fullPath = "";
+			@Override
+			public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
+				if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isDirectory()) {
+					realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
+					fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
+					BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
+					userDirectoriesAndFiles.add(baseFile);
+					counter++;
+				}
+				return FileVisitResult.CONTINUE;
+			}
 
-				@Override
-				public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
-					if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isDirectory()) {
-						realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
-						fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
-						BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
-						userDirectoriesAndFiles.add(baseFile);
-						counter++;
-					}
-					return FileVisitResult.CONTINUE;
+			@Override
+			public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
+				if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isRegularFile()) {
+					realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
+					fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
+					BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
+					userDirectoriesAndFiles.add(baseFile);
+					counter++;
 				}
 
-				@Override
-				public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
-					if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isRegularFile()) {
-						realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
-						fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
-						BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
-						userDirectoriesAndFiles.add(baseFile);
-						counter++;
-					}
+				return FileVisitResult.CONTINUE;
+			}
 
-					return FileVisitResult.CONTINUE;
-				}
+			@Override
+			public FileVisitResult visitFileFailed(Path path, IOException e) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
 
-				@Override
-				public FileVisitResult visitFileFailed(Path path, IOException e) throws IOException {
-					return FileVisitResult.CONTINUE;
-				}
+			@Override
+			public FileVisitResult postVisitDirectory(Path path, IOException e) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+		});
 
-				@Override
-				public FileVisitResult postVisitDirectory(Path path, IOException e) throws IOException {
-					return FileVisitResult.CONTINUE;
-				}
-			});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -155,15 +153,11 @@ public class StorageService {
  	}
 
 
-
-
 	private boolean hasAvailableSpace(String userDirectory, long userDiskSpace) {
 		Path path = Paths.get(getBasePath() + userDirectory);
-
 		long actualUserFolder = getFolderSize(path);
 
 		return actualUserFolder < userDiskSpace;
-
 	}
 
 
@@ -206,11 +200,11 @@ public class StorageService {
 
 
 	public boolean findFileByName(String authName, String fileName) {
-		ArrayList<BaseFile> fileAndDirectoriesPaths = getFileAndDirectoriesPaths(authName);
-		LinkedHashSet<String> fileNames = new LinkedHashSet<>();
-		fileAndDirectoriesPaths.forEach((file -> fileNames.add(file.getFileName())));
-		return fileNames.contains(fileName);
+		Optional<BaseFile> fileExistsOrNot =
+				getFileAndDirectoriesPaths(authName).stream().filter(baseFile -> baseFile.getFileName().equals(fileName)).findAny();
+		return fileExistsOrNot.isPresent();
 	}
+
 
 	public String getBasePath() {
 		return basePathStorage;
@@ -221,3 +215,45 @@ public class StorageService {
 
 
 }
+
+
+
+//	int counter = 0;
+//	String stablePath = "\\cloudstorage\\" + userDirectory;
+//	String realPath = "";
+//	String fullPath = "";
+//
+//	@Override
+//	public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
+//		if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isDirectory()) {
+//			realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
+//			fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
+//			BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
+//			userDirectoriesAndFiles.add(baseFile);
+//			counter++;
+//		}
+//		return FileVisitResult.CONTINUE;
+//	}
+//
+//	@Override
+//	public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
+//		if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isRegularFile()) {
+//			realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
+//			fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
+//			BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
+//			userDirectoriesAndFiles.add(baseFile);
+//			counter++;
+//		}
+//
+//		return FileVisitResult.CONTINUE;
+//	}
+//
+//	@Override
+//	public FileVisitResult visitFileFailed(Path path, IOException e) throws IOException {
+//		return FileVisitResult.CONTINUE;
+//	}
+//
+//	@Override
+//	public FileVisitResult postVisitDirectory(Path path, IOException e) throws IOException {
+//		return FileVisitResult.CONTINUE;
+//	}

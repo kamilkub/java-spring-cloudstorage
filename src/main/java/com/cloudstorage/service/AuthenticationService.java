@@ -39,7 +39,7 @@ public class AuthenticationService implements UserDetailsService {
 		List<SimpleGrantedAuthority> grantedAuth = Collections.singletonList(new SimpleGrantedAuthority("user"));
 
 
-		return new User(user.getUsername(), user.getPassword(), grantedAuth);
+		return new User(user.getUsername(), user.getPassword(), user.getAuthorities());
 	}
 
 

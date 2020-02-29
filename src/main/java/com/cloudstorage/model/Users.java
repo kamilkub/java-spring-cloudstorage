@@ -1,6 +1,7 @@
 package com.cloudstorage.model;
 
 
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Persistable;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.Date;
 
 @Document
+@NoArgsConstructor
 public class Users implements UserDetails, Persistable<String> {
 
 	@Id
