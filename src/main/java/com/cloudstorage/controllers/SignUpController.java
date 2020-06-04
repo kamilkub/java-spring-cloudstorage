@@ -9,18 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @Controller
 public class SignUpController {
@@ -59,7 +55,7 @@ public class SignUpController {
 
 
 	@PostMapping("/sign-up")
-	public String signUpUser(@Valid @ModelAttribute("user") Users user, BindingResult result, Model model) throws IOException {
+	public String signUpUser(@Valid @ModelAttribute("user") Users user, BindingResult result, Model model) {
 
 		if (result.hasErrors()) {
 			List<String> errorMessages = new ArrayList<>();
@@ -100,17 +96,14 @@ public class SignUpController {
 
 	@GetMapping("/activate")
 	public String activateUser(@RequestParam("pin") String pin, Model model){
-         Users user = signUpService.findByPin(pin);
 
-         if(user == null){
-			model.addAttribute("wrongPing", true);
-         	return "activatePage";
-
-		 } else {
-			signUpService.activateUser(user);
-			model.addAttribute("activationSuccess", true);
-         	return "activatePage";
-		 }
+         if(signUpService.activateUser(pin)){
+             model.addAttribute("activationSuccess", true);
+			 return "activatePage";
+         } else {
+             model.addAttribute("wrongPing", true);
+             return "activatePage";
+         }
 
 
 	}

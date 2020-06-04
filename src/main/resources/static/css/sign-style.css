@@ -99,15 +99,21 @@ body {
 
 .alert{
   text-align:center;
+  bottom: 50px;
 }
 
 
 #qrcode-container{
     text-align:center;
     margin:0 auto;
+    display: none;
 
 }
 
 #qrcode-container{
     margin:auto;
+}
+
+#qrcode-container img{
+    margin: auto;
 }

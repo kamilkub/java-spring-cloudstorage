@@ -2,29 +2,24 @@ package com.cloudstorage.controllers;
 
 
 import com.cloudstorage.config.UserAuthenticationFilter;
-import com.cloudstorage.exceptions.MessageAdvice;
 import com.cloudstorage.model.BaseFile;
 import com.cloudstorage.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 
 
 @RestController
@@ -67,7 +62,7 @@ public class StorageController {
 
 
 	@PostMapping("/delete-file")
-	public String deleteFile(@RequestBody String fileName) throws IOException {
+	public String deleteFile(@RequestBody String fileName)  {
 
 		if (userAuthenticationFilter.isAuthenticatedBool() && !fileName.isEmpty())
 			if (storageService.removeFileByName(userAuthenticationFilter.getAuthenticationUsername(), fileName))
@@ -93,8 +88,12 @@ public class StorageController {
 	public String createDir(@RequestParam("dirName") String dirName) {
 
 		if(dirName.length() > 0 && userAuthenticationFilter.isAuthenticatedBool()){
-			storageService.createDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName);
-			return "redirect:/user";
+			if(storageService.createDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName)) {
+				return "redirect:/user";
+			} else {
+				return "File already exists";
+			}
+
 		} else {
 			return "redirect:/user";
 		}
@@ -104,38 +103,36 @@ public class StorageController {
 
 	@GetMapping("/all-files")
 	public ArrayList<BaseFile> getAllFiles() {
-		System.out.println("Authenticated directory >>> : " + userAuthenticationFilter.getAuthenticatedDirectory());
 		return userAuthenticationFilter.isAuthenticatedBool() ?
 				storageService.getFileAndDirectoriesPaths(userAuthenticationFilter.getAuthenticationUsername()) : null;
 	}
 
 
 
+	@ResponseBody
+	@GetMapping(value = "/download-file", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	public Object shareFileUnderUrl(@RequestParam("fileName") String fileName) {
 
-	@GetMapping("/download-file")
-	public ResponseEntity shareFileUnderUrl(@RequestParam("fileName") String fileName) throws IOException {
+		String userName = userAuthenticationFilter.getAuthenticationUsername();
 
-		if(storageService.findFileByName(userAuthenticationFilter.getAuthenticationUsername(), fileName) && fileName.contains(".")) {
+		if(storageService.findFileByName(userName, fileName) && fileName.contains(".")) {
+			File file = new File(storageService.getBasePath() + userName + File.separator + fileName);
+
 			HttpHeaders header = new HttpHeaders();
 			header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName.substring(fileName.lastIndexOf("/")+1));
 			header.add("Cache-Control", "no-cache, no-store, must-revalidate");
 			header.add("Pragma", "no-cache");
 			header.add("Expires", "0");
 
-			ByteArrayResource resource =
-					new ByteArrayResource
-							(Files.readAllBytes(Paths.get(storageService.getBasePath() + userAuthenticationFilter.getAuthenticationUsername() + fileName)));
+			header.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+			header.setContentLength(file.length());
 
-			return ResponseEntity.ok()
-					.headers(header)
-					.contentLength(resource.contentLength())
-					.contentType(MediaType.parseMediaType("application/octet-stream"))
-					.body(resource);
+			return new ResponseEntity<>(new FileSystemResource(file), header, HttpStatus.OK);
+
 		} else {
 
-			return ResponseEntity.badRequest().body(new MessageAdvice(HttpStatus.NOT_FOUND, "Selected file is a directory or has not been found"));
+			return new RedirectView("/user");
 		}
-
 
 	}
 

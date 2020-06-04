@@ -9,15 +9,18 @@ function getAllFilesAndRender () {
         var fileTypeIcon = "";
         var createDirInDir = "";
         var deleteClass = "";
+        var downloadAble = "";
         for(var i = 0; i < data.length; i++) {
         if(data[i].fileType === "dir"){
             fileTypeIcon = "<img src='https://img.icons8.com/officel/30/000000/delete-folder.png'>";
             createDirInDir = "<img src='https://img.icons8.com/office/30/000000/add-folder.png'>";
             deleteClass = 'remove-dir';
+            downloadAble = '';
         } else {
             fileTypeIcon = "<img src='https://img.icons8.com/office/30/000000/delete-file.png'>";
             createDirInDir = "";
             deleteClass = 'remove-click';
+            downloadAble = "href='/user/storage/download-file?fileName="+data[i].fileName+"'";
         }
          renderData += "<tr>"+
                             "<td>"+data[i].fileName+"</td>"+
@@ -32,7 +35,7 @@ function getAllFilesAndRender () {
                             "</a>" +
                             "</td>" +
                             "<td>"+
-                            "<a href='/user/storage/download-file?fileName="+data[i].fileName+"'>" +
+                            "<a "+ downloadAble +">" +
                             "<img src='https://img.icons8.com/ultraviolet/30/000000/download.png'>" + "</a>" +
                             "</td>"
                         +"</tr>"
@@ -41,15 +44,32 @@ function getAllFilesAndRender () {
         makeFilesRemovable();
         makesDirectoriesRemovable();
         letCreateDirsInDir();
+//        downloadAble();
 
     });
 }
 
 getAllFilesAndRender();
 
-/*
-  @@ Create New Child Directory
-*/
+
+$('.download-file').click((e) => {
+console.log('Clicked');
+ var fileName = $(e.currentTarget).attr('data');
+console.log('fileName '+ fileName);
+
+const childDirRequest = $.get('/user/storage/download-file?fileName='+fileName, (response) => {
+                  alert(response);
+      });
+
+      childDirRequest.done((msg) => {
+      });
+
+      childDirRequest.fail((error) => {
+                  console.log(error);
+      });
+
+})
+
 
 
 function letCreateDirsInDir() {
@@ -62,11 +82,10 @@ function letCreateDirsInDir() {
       let fullPath = parentDirectory + childDirectoryName;
 
       const childDirRequest = $.post('/user/storage/create-dir', {dirName: fullPath}, (response) => {
-                  console.log(response);
+                  alert(response);
       });
 
       childDirRequest.done((msg) => {
-                  console.log("Directory created");
                   getAllFilesAndRender();
       });
 
@@ -90,7 +109,7 @@ $('.create-dir').click((e) => {
 
     if(directoryName.length > 0) {
         const createDirRequest = $.post('/user/storage/create-dir', {dirName: directoryName}, (response) => {
-                console.log(response);
+                alert(response);
         });
 
         createDirRequest.done((msg) => {
