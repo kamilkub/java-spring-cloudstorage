@@ -1,6 +1,6 @@
 package com.cloudstorage;
 
-import com.cloudstorage.model.BaseFile;
+import com.cloudstorage.model.FileObject;
 import com.cloudstorage.service.StorageService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
@@ -20,6 +22,8 @@ public class StorageServiceTest {
 
     @Autowired
     private StorageService storageService;
+
+
 
 
     @Test
@@ -40,14 +44,23 @@ public class StorageServiceTest {
 
     @Test
     public void testMethodGetFolderSize() {
-        assertEquals(0,storageService.getFolderSize(Paths.get(storageService.getBasePath() + "kamkk")));
+        assertEquals(0, storageService.getFolderSize(Paths.get(storageService.getBasePathStorage() + "kamkk")));
     }
 
     @Test
     public void testGetAllFilesAndDirsMethod() {
-        ArrayList<BaseFile> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths("kamkk");
+        ArrayList<FileObject> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths("test");
+        fileAndDirectoriesPaths.forEach(fileObject -> {
+            System.out.println(fileObject.getFileName() + " " + fileObject.getFullPath());
+        });
+    }
 
-//        fileAndDirectoriesPaths.forEach(baseFile -> System.out.println(baseFile.getFileName()));
+
+    @Test
+    public void doesPathEquality() {
+        Path path1 = Paths.get(storageService.getBasePathStorage() + "test");
+        Path path2 = Paths.get(storageService.getBasePathStorage() + "test" + File.separator + "asd");
+        assertTrue("How?", path2.toString().contains(path1.toString()));
     }
 
 

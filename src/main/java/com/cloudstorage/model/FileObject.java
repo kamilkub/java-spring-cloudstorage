@@ -6,25 +6,20 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BaseFile  {
+public class FileObject {
 
     private int id;
     private String fileName;
 
     @JsonIgnore
     private String fullPath;
-    private String fileType;
+    private boolean isDirectory;
 
-    public BaseFile(int id, String fileName, String fullPath) {
+    public FileObject(int id, String fileName, String fullPath, boolean isDirectory) {
         this.id = id;
         this.fileName = fileName;
         this.fullPath = fullPath;
-        if(!fileName.contains(".")) {
-            this.fileType = "dir";
-            this.fileName += "/";
-        } else {
-            this.fileType = "file";
-        }
+        this.isDirectory = isDirectory;
     }
 
 }

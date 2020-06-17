@@ -1,7 +1,7 @@
 package com.cloudstorage.service;
 
 
-import com.cloudstorage.model.BaseFile;
+import com.cloudstorage.model.FileObject;
 import com.cloudstorage.repository.UsersRepository;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
@@ -38,10 +38,14 @@ public class StorageService {
 		this.usersRepository = usersRepository;
 	}
 
+
+	public String getBasePathStorage() {
+		return basePathStorage;
+	}
+
 	public void uploadFile(MultipartFile storageFile, String userFolder) {
 
-		Path storagePath = Paths.get(getBasePath() + userFolder);
-
+		Path storagePath = Paths.get(basePathStorage + userFolder);
 
 			try {
 				Files.copy(storageFile.getInputStream(), storagePath.resolve(Objects.requireNonNull(storageFile.getOriginalFilename())));
@@ -56,9 +60,9 @@ public class StorageService {
 	public void init(String userDirectory) {
 
 		try {
-			Files.createDirectory(Paths.get(getBasePath() + userDirectory));
+			Files.createDirectory(Paths.get(basePathStorage + userDirectory));
 		} catch (IOException e) {
-			logger.error("Method init() threw an exception : " + e.getLocalizedMessage());
+			logger.error("Method init() threw an exception : " + e.getMessage());
 		}
 
 	}
@@ -67,8 +71,8 @@ public class StorageService {
 	@EventListener(ApplicationReadyEvent.class)
     public void initializeHomeDirectory() {
 	    try{
-	    	if(!Paths.get(getBasePath()).toFile().exists()){
-				Files.createDirectory(Paths.get(getBasePath()));
+	    	if(!Paths.get(basePathStorage).toFile().exists()){
+				Files.createDirectory(Paths.get(basePathStorage));
 				logger.info("!< Home directory initialized successfully >!");
 			}
         }catch (IOException e) {
@@ -79,7 +83,7 @@ public class StorageService {
 
 
 	public boolean createDirectory(String userDirectory, String directoryName) {
-		Path path = Paths.get(getBasePath() + userDirectory + File.separator + directoryName);
+		Path path = Paths.get(basePathStorage + userDirectory + File.separator + directoryName);
 		try {
 			if(!path.toFile().exists()){
 				Files.createDirectory(path);
@@ -93,12 +97,12 @@ public class StorageService {
 	}
 
 
-	public ArrayList<BaseFile> getFileAndDirectoriesPaths(String userDirectory)  {
+	public ArrayList<FileObject> getFileAndDirectoriesPaths(String userDirectory)  {
 
-		SimpleFileVisitorImpl fileVisitor = new SimpleFileVisitorImpl(userDirectory);
+		SimpleFileVisitorImpl fileVisitor = new SimpleFileVisitorImpl(getBasePathStorage() + userDirectory);
 
 		try {
-			Files.walkFileTree(Paths.get(getBasePath() + userDirectory).normalize(), fileVisitor);
+			Files.walkFileTree(Paths.get(basePathStorage + userDirectory).normalize(), fileVisitor);
 		} catch (IOException e) {
 			logger.error("Method getFileAndDirectoriesPaths() threw an exception the cause is " + e.getMessage());
 		}
@@ -111,7 +115,7 @@ public class StorageService {
 
 		if (!fileName.isEmpty()) {
 			try {
-				Files.delete(Paths.get(getBasePath() + userDirectory + File.separator + fileName).normalize());
+				Files.delete(Paths.get(basePathStorage + userDirectory + File.separator + fileName).normalize());
 				return true;
 			} catch (IOException e) {
 				logger.error(e.getMessage());
@@ -124,7 +128,7 @@ public class StorageService {
 
 	public boolean removeDirectory(String userDirectory, String folderName) {
 
-		File userDir = new File(getBasePath() + userDirectory + File.separator + folderName);
+		File userDir = new File(basePathStorage + userDirectory + File.separator + folderName);
 
 		if(userDir.isDirectory() && userDir.exists()){
 			try {
@@ -142,7 +146,7 @@ public class StorageService {
 
 
 	private boolean hasAvailableSpace(String userDirectory, long userDiskSpace) {
-		Path path = Paths.get(getBasePath() + userDirectory);
+		Path path = Paths.get(basePathStorage + userDirectory);
 		long actualUserFolder = getFolderSize(path);
 
 		return actualUserFolder < userDiskSpace;
@@ -150,7 +154,7 @@ public class StorageService {
 
 
 	private long getAvailableSpace(String userDirectory, long userDiskSpace) {
-		Path path = Paths.get(getBasePath() + userDirectory);
+		Path path = Paths.get(basePathStorage + userDirectory);
 		long actualUserFolder = getFolderSize(path);
 
 
@@ -164,7 +168,6 @@ public class StorageService {
 
 
 	public boolean isEnoughSpace(String userDirectory, String username, long fileSize) {
-
 		long userDiskSpace = usersRepository.findByUsername(username).getDiskSpace();
 
 		long availableSpace = getAvailableSpace(userDirectory, userDiskSpace);
@@ -188,16 +191,11 @@ public class StorageService {
 	}
 
 
-	public boolean findFileByName(String authName, String fileName) {
-		Optional<BaseFile> fileExistsOrNot =
+	public boolean fileExists(String authName, String fileName) {
+		Optional<FileObject> fileExistsOrNot =
 				getFileAndDirectoriesPaths(authName).stream().filter(baseFile -> baseFile.getFileName().equals(fileName)).findAny();
 
 		return fileExistsOrNot.isPresent();
-	}
-
-
-	public String getBasePath() {
-		return basePathStorage;
 	}
 
 
@@ -205,45 +203,3 @@ public class StorageService {
 }
 
 
-
-//Files.walkFileTree(Paths.get(getBasePath() + userDirectory).normalize(), new SimpleFileVisitor<>() {
-//		int counter = 0;
-//		String stablePath = "\\cloudstorage\\" + userDirectory;
-//		String realPath = "";
-//		String fullPath = "";
-//
-//@Override
-//public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
-//		if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isDirectory()) {
-//		realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
-//		fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
-//		BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
-//		userDirectoriesAndFiles.add(baseFile);
-//		counter++;
-//		}
-//		return FileVisitResult.CONTINUE;
-//		}
-//
-//@Override
-//public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) throws IOException {
-//		if(path.getParent().toString().toLowerCase().contains(stablePath) && basicFileAttributes.isRegularFile()) {
-//		realPath = path.getParent().toString() + File.separator + path.getFileName().toString();
-//		fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
-//		BaseFile baseFile = new BaseFile(counter, fullPath, path.getParent().toString());
-//		userDirectoriesAndFiles.add(baseFile);
-//		counter++;
-//		}
-//
-//		return FileVisitResult.CONTINUE;
-//		}
-//
-//@Override
-//public FileVisitResult visitFileFailed(Path path, IOException e) throws IOException {
-//		return FileVisitResult.CONTINUE;
-//		}
-//
-//@Override
-//public FileVisitResult postVisitDirectory(Path path, IOException e) throws IOException {
-//		return FileVisitResult.CONTINUE;
-//		}
-//		});

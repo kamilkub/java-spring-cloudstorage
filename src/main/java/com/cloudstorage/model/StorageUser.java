@@ -10,28 +10,29 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
 @Document
 @NoArgsConstructor
-public class Users implements UserDetails, Persistable<String> {
+public class StorageUser implements UserDetails, Persistable<String> {
 
 	@Id
 	private String id;
 
-	@Email
+	@Email(message = "Must be a well formed email address")
 	@NotEmpty(message = "Email is empty")
 	private String email;
 
+	@NotBlank(message = "Username is empty")
 	@NotEmpty(message = "Username is empty")
+	@Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "You can't use special characters only _ is allowed")
 	private String username;
 
 	@NotEmpty(message = "Password is empty")
+	@NotBlank(message = "Password is empty")
 	@Size(min = 6, message = "Password must be at least 6 characters long")
 	private String password;
 
@@ -162,7 +163,7 @@ public class Users implements UserDetails, Persistable<String> {
 
 	@Override
 	public String toString() {
-		return "Users{" +
+		return "StorageUser{" +
 				"id='" + id + '\'' +
 				", email='" + email + '\'' +
 				", username='" + username + '\'' +

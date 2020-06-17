@@ -2,10 +2,12 @@ package com.cloudstorage.controllers;
 
 
 import com.cloudstorage.config.UserAuthenticationFilter;
-import com.cloudstorage.model.Users;
+import com.cloudstorage.model.StorageUser;
 import com.cloudstorage.service.SignUpService;
+import com.cloudstorage.service.StatisticsService;
 import com.cloudstorage.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,8 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class SignUpController {
@@ -27,12 +28,14 @@ public class SignUpController {
 
 	private UserAuthenticationFilter userAuthenticationFilter;
 
+	private StatisticsService statisticsService;
 
 	@Autowired
-	public SignUpController(SignUpService signUpService, StorageService storageService, UserAuthenticationFilter userAuthenticationFilter) {
+	public SignUpController(SignUpService signUpService, StorageService storageService, UserAuthenticationFilter userAuthenticationFilter, StatisticsService statisticsService) {
 		this.signUpService = signUpService;
 		this.storageService = storageService;
 		this.userAuthenticationFilter = userAuthenticationFilter;
+		this.statisticsService = statisticsService;
 	}
 
 	@GetMapping("/sign-in")
@@ -49,42 +52,35 @@ public class SignUpController {
 		if(userAuthenticationFilter.isAuthenticatedBool())
 			return "redirect:/user";
 		else
-			model.addAttribute("user", new Users());
+			model.addAttribute("user", new StorageUser());
 			return "auth_templates/sign-up";
 	}
 
 
 	@PostMapping("/sign-up")
-	public String signUpUser(@Valid @ModelAttribute("user") Users user, BindingResult result, Model model) {
+	public String signUpUser(@Valid @ModelAttribute("user") StorageUser user, BindingResult result, Model model) {
 
 		if (result.hasErrors()) {
-			List<String> errorMessages = new ArrayList<>();
+			model.addAttribute("listOfErrors", result.getAllErrors()
+														.stream()
+														.map(DefaultMessageSourceResolvable::getDefaultMessage)
+														.collect(Collectors.toList()));
+		} else {
 
-			result.getAllErrors().forEach((objectError -> errorMessages.add(objectError.getDefaultMessage())));
-
-			model.addAttribute("listOfErrors", errorMessages);
-		}else {
-
-			if (signUpService.findByEmail(user.getEmail()) != null && signUpService.findByUsername(user.getUsername()) != null) {
+			if (signUpService.isEmailTaken(user.getEmail()) || signUpService.isUsernameTaken(user.getUsername())) {
 				model.addAttribute("exists", true);
 				return "auth_templates/sign-up";
 
 			} else {
+				String pinFromService = signUpService.signUpUser(user);
+				storageService.init(user.getUsername());
+				statisticsService.initLogFile(user.getUsername());
 
-				String stringPin = String.valueOf(signUpService.generateActivationPin());
-
-				model.addAttribute("pin", "http://localhost:8080/activate?pin=" + stringPin);
+				model.addAttribute("pin", "http://localhost:8080/activate?pin=" + pinFromService);
 				model.addAttribute("userSaved", true);
 				model.addAttribute("qrcode", true);
 
-				user.setDirectoryName(user.getUsername());
-				user.setPin(stringPin);
-				user.setPersisted(true);
-				signUpService.signUpUser(user);
-				storageService.init(user.getUsername());
-
 				return "auth_templates/sign-up";
-
 
 			}
 		}

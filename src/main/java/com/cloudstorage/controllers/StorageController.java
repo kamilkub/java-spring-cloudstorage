@@ -2,7 +2,8 @@ package com.cloudstorage.controllers;
 
 
 import com.cloudstorage.config.UserAuthenticationFilter;
-import com.cloudstorage.model.BaseFile;
+import com.cloudstorage.model.FileObject;
+import com.cloudstorage.service.StatisticsService;
 import com.cloudstorage.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -30,13 +31,14 @@ public class StorageController {
 
 	private StorageService storageService;
 
+	private StatisticsService statisticsService;
+
 	@Autowired
-	public StorageController(StorageService storageService, UserAuthenticationFilter userAuthenticationFilter) {
-		this.storageService = storageService;
+	public StorageController(UserAuthenticationFilter userAuthenticationFilter, StorageService storageService, StatisticsService statisticsService) {
 		this.userAuthenticationFilter = userAuthenticationFilter;
+		this.storageService = storageService;
+		this.statisticsService = statisticsService;
 	}
-
-
 
 	@PostMapping("/upload")
 	public void storageUpload(@RequestParam("files") MultipartFile[] storageFile, Model model, HttpServletResponse response) {
@@ -45,13 +47,16 @@ public class StorageController {
 
 		Arrays.stream(storageFile)
 				.forEach((multipartFile) -> {
-						if(!multipartFile.isEmpty()
-								&& userAuthenticationFilter.isAuthenticatedBool()
-								&& storageService.isEnoughSpace(userAuthenticationFilter.getAuthenticationUsername(), userAuthenticationFilter.getAuthenticationUsername(), multipartFile.getSize()))
+						if(!multipartFile.isEmpty() && userAuthenticationFilter.isAuthenticatedBool()
+								&& storageService.isEnoughSpace(userAuthenticationFilter.getAuthenticationUsername(),
+								userAuthenticationFilter.getAuthenticationUsername(), multipartFile.getSize())) {
+
 							storageService.uploadFile(multipartFile, userAuthenticationFilter.getAuthenticationUsername());
-						else
+							statisticsService.logUsersUpload(userAuthenticationFilter.getAuthenticationUsername(), multipartFile.getOriginalFilename());
+						} else {
 							isAvailableSpace.set(false);
-		});
+
+						}});
 
 		if(!isAvailableSpace.get()) {
 			response.setStatus(406);
@@ -89,7 +94,7 @@ public class StorageController {
 
 		if(dirName.length() > 0 && userAuthenticationFilter.isAuthenticatedBool()){
 			if(storageService.createDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName)) {
-				return "redirect:/user";
+				return "Folder created";
 			} else {
 				return "File already exists";
 			}
@@ -102,7 +107,7 @@ public class StorageController {
 
 
 	@GetMapping("/all-files")
-	public ArrayList<BaseFile> getAllFiles() {
+	public ArrayList<FileObject> getAllFiles() {
 		return userAuthenticationFilter.isAuthenticatedBool() ?
 				storageService.getFileAndDirectoriesPaths(userAuthenticationFilter.getAuthenticationUsername()) : null;
 	}
@@ -115,8 +120,8 @@ public class StorageController {
 
 		String userName = userAuthenticationFilter.getAuthenticationUsername();
 
-		if(storageService.findFileByName(userName, fileName) && fileName.contains(".")) {
-			File file = new File(storageService.getBasePath() + userName + File.separator + fileName);
+		if(storageService.fileExists(userName, fileName) && fileName.contains(".")) {
+			File file = new File(storageService.getBasePathStorage() + userName + File.separator + fileName);
 
 			HttpHeaders header = new HttpHeaders();
 			header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName.substring(fileName.lastIndexOf("/")+1));

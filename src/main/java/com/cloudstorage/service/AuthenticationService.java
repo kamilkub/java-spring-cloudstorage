@@ -1,7 +1,7 @@
 package com.cloudstorage.service;
 
 
-import com.cloudstorage.model.Users;
+import com.cloudstorage.model.StorageUser;
 import com.cloudstorage.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,7 +25,7 @@ public class AuthenticationService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-		Users user = usersRepository.findByUsername(username);
+		StorageUser user = usersRepository.findByUsername(username);
 
 		if(user == null){
 			throw new UsernameNotFoundException("No user found for this username");

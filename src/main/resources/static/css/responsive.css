@@ -1,18 +1,45 @@
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 990px) {
     .side-viewer {
-        width:100%;
+        width: 100%;
     }
-
     .side-menu {
-        width:100%;
+        width: 100%;
         height: 500px;
     }
-
     .menu-header {
-        height: 50px;
+        height: 100px;
     }
-
     .main-viewer {
-        width:100%;
+        width: 100%;
+    }
+    .menu-header.text-center h1 {
+        width: 100%;
+        margin: auto;
+        vertical-align: middle;
+        padding-top: 3%;
+        font-size: 10rem;
+    }
+    .elements {
+        width: 100%;
+        margin: auto;
+        vertical-align: middle;
+    }
+    .element-menu {
+        padding-top: 0%;
+    }
+    .element-menu a {
+        line-height: 80px;
+    }
+}
+
+@media only screen and (max-width: 1600px) {
+    .menu-header.text-center h1 {
+        font-size: 2rem;
+    }
+}
+
+@media only screen and (max-width: 1400px) {
+    .menu-header.text-center h1 {
+        font-size: 1.5rem;
     }
 }

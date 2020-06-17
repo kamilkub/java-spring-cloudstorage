@@ -11,7 +11,7 @@ function getAllFilesAndRender () {
         var deleteClass = "";
         var downloadAble = "";
         for(var i = 0; i < data.length; i++) {
-        if(data[i].fileType === "dir"){
+        if(data[i].directory){
             fileTypeIcon = "<img src='https://img.icons8.com/officel/30/000000/delete-folder.png'>";
             createDirInDir = "<img src='https://img.icons8.com/office/30/000000/add-folder.png'>";
             deleteClass = 'remove-dir';

@@ -1,49 +1,45 @@
 package com.cloudstorage.service;
 
-import com.cloudstorage.model.BaseFile;
-import org.springframework.beans.factory.annotation.Value;
+import com.cloudstorage.model.FileObject;
 import org.thymeleaf.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-
 
 public class SimpleFileVisitorImpl extends SimpleFileVisitor<Path> {
 
     private static int counter = 0;
 
-    @Value("${BASE_PATH}")
-    private String stablePath = "";
+    private static String realPath;
 
-    private static String realPath = "";
+    private static String fullPath;
 
-    private static String fullPath = "";
+    private ArrayList<FileObject> dirsAndFiles = new ArrayList<FileObject>();
 
-    private ArrayList<BaseFile> dirsAndFiles = new ArrayList<BaseFile>();
+    private Path stablePath;
 
-
-
-    SimpleFileVisitorImpl(String userDirectory) {
-        this.stablePath += userDirectory;
+    public SimpleFileVisitorImpl(String stablePath) {
+        this.stablePath = Paths.get(stablePath);
     }
 
-    ArrayList<BaseFile> getDirsAndFiles() {
+    ArrayList<FileObject> getDirsAndFiles() {
         return dirsAndFiles;
     }
 
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-        if(dir.getParent().toString().toLowerCase().contains(stablePath) && attrs.isDirectory()) {
+        if(dir.getParent().toString().contains(stablePath.toString()) && attrs.isDirectory()) {
             realPath = dir.getParent().toString() + File.separator + dir.getFileName().toString();
-            fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
-            BaseFile baseFile = new BaseFile(counter, dir.getFileName().toString(), dir.getParent().toString());
-            dirsAndFiles.add(baseFile);
+            fullPath = StringUtils.replace(realPath, stablePath.toString(), "").replace("\\", "/");
+            FileObject fileObject = new FileObject(counter, dir.getFileName().toString(), dir.getParent().toString(), true);
+            dirsAndFiles.add(fileObject);
             counter++;
         }
         return FileVisitResult.CONTINUE;
@@ -51,11 +47,13 @@ public class SimpleFileVisitorImpl extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFile(Path dir, BasicFileAttributes attrs) {
-            realPath = dir.getParent().toString() + File.separator + dir.getFileName().toString();
-            fullPath = StringUtils.replace(realPath, stablePath, "").replace("\\", "/");
-            BaseFile baseFile = new BaseFile(counter, dir.getFileName().toString() , dir.getParent().toString());
-            dirsAndFiles.add(baseFile);
-            counter++;
+            if(!dir.toFile().getName().equals("backlog.txt")){
+                realPath = dir.getParent().toString() + File.separator + dir.getFileName().toString();
+                fullPath = StringUtils.replace(realPath, stablePath.toString(), "").replace("\\", "/");
+                FileObject fileObject = new FileObject(counter, dir.getFileName().toString() , dir.getParent().toString(), false);
+                dirsAndFiles.add(fileObject);
+                counter++;
+            }
 
         return FileVisitResult.CONTINUE;
     }

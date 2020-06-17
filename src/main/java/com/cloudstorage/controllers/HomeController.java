@@ -2,14 +2,11 @@ package com.cloudstorage.controllers;
 
 
 import com.cloudstorage.config.UserAuthenticationFilter;
-import com.cloudstorage.model.BaseFile;
 import com.cloudstorage.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import java.util.ArrayList;
 
 
 @Controller
@@ -27,9 +24,6 @@ public class HomeController {
 
 	@GetMapping(value = {"/user", "/user/files"})
 	public String homePage(Model model){
-		ArrayList<BaseFile> fileAndDirectoriesPaths = storageService.getFileAndDirectoriesPaths(userAuthenticationFilter.getAuthenticationUsername());
-		model.addAttribute("files", fileAndDirectoriesPaths);
-
 		return "homePage";
 	}
 
@@ -42,7 +36,6 @@ public class HomeController {
 			return "welcomePage";
 
 	}
-
 
 
 }
