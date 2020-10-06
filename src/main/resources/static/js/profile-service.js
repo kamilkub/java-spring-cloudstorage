@@ -1,5 +1,51 @@
 
+$('#update-button').click((e) => {
+    e.preventDefault();
+    let email = $('input[name=email]').val();
+    let oldPassword = $('input[name=oldPassword]').val();
+    let newPassword = $('input[name=newPassword]').val();
 
+    if(oldPassword != newPassword && newPassword.length >= 6){
+
+        let updateObject = {
+            "email" : email,
+            "oldPassword" : oldPassword,
+            "newPassword" : newPassword
+        }
+
+        const updateRequest = $.ajax({
+            url : '/user/update-profile-data',
+            method: 'POST',
+            data: JSON.stringify(updateObject),
+            contentType: 'application/json',
+            processData: false
+        });
+
+        updateRequest.done((response) => {
+                if(response == 'BAD_REQUEST'){
+                    alert("Password you provided is incorrect or the new one doesn't have 6 characters!");
+                    $('input[name=oldPassword]').val("");
+                    $('input[name=newPassword]').val("");
+                } else {
+                    alert("Password changed successfully");
+                    $('input[name=oldPassword]').attr("disabled", "true");
+                    $('input[name=newPassword]').attr("disabled", "true");
+                    $('input[name=oldPassword]').val("");
+                    $('input[name=newPassword]').val("");
+                }
+        });
+
+        updateRequest.fail((error) => {
+            console.log(error);
+        });
+
+    } else {
+
+       alert('Password is to short or the same');
+
+    }
+
+});
 
  const getUserData = $.ajax({
         url : '/user/profile-data',
@@ -9,11 +55,8 @@
         processData: false
  });
 
-
  getUserData.done((msg) => {
-        $("input[name=username]").val(msg.username);
         $("input[name=email]").val(msg.email);
-        $("input[name=email-holder]").val(msg.email);
         let value = getTakenSpacePercentage(msg.diskLimitation, msg.takenSpace);
         $('.real-percentage').text(Math.round(value));
         $('.text').text("Space limit: " + convertSpaceToReadAbleGB(msg.diskLimitation));
@@ -42,15 +85,13 @@
 
  $('#edit-button').click((e) => {
         e.preventDefault();
-       $('input[name=email]').removeAttr("disabled");
-       $('input[name=username]').removeAttr("disabled");
+       $('input[name=oldPassword]').removeAttr("disabled");
+       $('input[name=newPassword]').removeAttr("disabled");
+//       $('input[name=email]').removeAttr("disabled");
+       $('#update-button').removeAttr("disabled");
 
  });
 
- $('#update-button').click((e) => {
-    e.preventDefault();
-
- });
 
 
  function createBar(percent) {

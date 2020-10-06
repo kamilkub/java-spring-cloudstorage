@@ -27,11 +27,9 @@ public class StorageUser implements UserDetails, Persistable<String> {
 	private String email;
 
 	@NotBlank(message = "Username is empty")
-	@NotEmpty(message = "Username is empty")
 	@Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "You can't use special characters only _ is allowed")
 	private String username;
 
-	@NotEmpty(message = "Password is empty")
 	@NotBlank(message = "Password is empty")
 	@Size(min = 6, message = "Password must be at least 6 characters long")
 	private String password;

@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profile</title>
     <link rel="icon" href="/image/icon.png">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -9,7 +10,13 @@
     <link rel="stylesheet" href="/css/user-menu.css">
     <link rel="stylesheet" href="/css/sidebar.css">
     <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/responsive.css">
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <style>
+        .side-menu {
+            border-right:2px solid white;
+        }
+    </style>
 </head>
 <body>
 
@@ -20,16 +27,16 @@
 
     <div class="main-viewer">
 
-        <div class="side-viewer colourel">
+        <div class="side-viewer colourel" >
             <div style="text-align:center;padding-top:5%" class="profile-image">
-                <img src="/image/user.png" alt="profile-photo">
+                <img src="/image/person.png" alt="profile-photo">
             </div>
-            <input type="text" name="username" disabled>
-            <input type="text" name="email" disabled>
-            <input type="text" name="email-holder" hidden>
+                <input type="text" name="email"  disabled required>
+                <input type="password"  name="oldPassword" placeholder="Old password" disabled required>
+                <input type="password"  name="newPassword" min="6"  placeholder="New password" disabled required>
+                <button id="edit-button" class="btn btn-warning btn-lg btn-block">Edit</button>
+                <button id="update-button" class="btn btn-success btn-lg btn-block" disabled>Update</button>
 
-            <button id="edit-button" class="btn btn-warning btn-lg btn-block">Edit</button>
-            <button id="update-button" class="btn btn-success btn-lg btn-block" disabled>Update</button>
         </div>
             <div class="side-viewer colourelTwo">
              <div id="progress-bar">

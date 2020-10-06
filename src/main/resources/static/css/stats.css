@@ -1,0 +1,38 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.review-block {
+    float:left;
+    width: 84%;
+    background: #d91e51;
+    height:100%;
+}
+
+.side-menu {
+    height: 100%;
+}
+
+.top-review {
+    width: 100%;
+    height: 49.8%;
+    border-bottom: 1px solid #091124;
+}
+
+.bottom-review {
+    width: 100%;
+    height: 49.8%;
+    background-size: contain;
+}
+
+.bottom-review img {
+    width:33%;
+    height: auto;
+}
+
+.drives {
+    display:inline-block;
+    margin: auto;
+}
+

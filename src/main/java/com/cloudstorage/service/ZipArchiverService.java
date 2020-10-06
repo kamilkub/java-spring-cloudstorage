@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
     Future implementation
 
  */
+
+// TODO: Service for uploading entire folder
 @UnderImplementation
 @Service
 public class ZipArchiverService implements Runnable {
