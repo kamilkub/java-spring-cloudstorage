@@ -27,4 +27,5 @@ jobs:
         git clone https://github.com/kamilkub/java-spring-cloudstorage.git
         cd java-spring-cloudstorage
         ls -a
+        mvn spring-boot:run
         
