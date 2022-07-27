@@ -11,6 +11,14 @@
 <code>git clone https://github.com/kamilkub/java-spring-cloudstorage.git</code>
 2. Go to project directory and edit <code>application.properties</code> file. <br>
 3. Set MongoDB connection properties according to your settings.
+
+```
+spring.data.mongodb.host = localhost
+spring.data.mongodb.port = 27017
+spring.data.mongodb.database = cloudstorage
+spring.data.mongodb.repositories.enabled = true
+```
+
 4. Set property <code>BASE_URL</code> to any directory you want as a main storage directory for the project.
 5. Run the project typing <code>mvn spring-boot:run</code> in your terminal at project base path
 
