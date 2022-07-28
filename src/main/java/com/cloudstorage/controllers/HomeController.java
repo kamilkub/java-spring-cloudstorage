@@ -11,11 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class HomeController {
-
-
 	private UserAuthenticationFilter userAuthenticationFilter;
 	private StorageService storageService;
-
 	@Autowired
 	public HomeController(UserAuthenticationFilter userAuthenticationFilter, StorageService storageService) {
 		this.userAuthenticationFilter = userAuthenticationFilter;
@@ -27,7 +24,6 @@ public class HomeController {
 		return "homePage";
 	}
 
-
 	@GetMapping(value = {"/", "/home"})
 	public String welcomePage(){
 		if(userAuthenticationFilter.isAuthenticatedBool())
@@ -36,6 +32,4 @@ public class HomeController {
 			return "welcomePage";
 
 	}
-
-
 }

@@ -2,7 +2,7 @@ package com.cloudstorage.config;
 
 
 import com.cloudstorage.service.AuthenticationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -14,12 +14,9 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @EnableWebSecurity
 @EnableConfigurationProperties
+@RequiredArgsConstructor
 public class WebSecurity extends WebSecurityConfigurerAdapter {
-
-
-	@Autowired
-	private AuthenticationService authenticationService;
-
+	private final AuthenticationService authenticationService;
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {

@@ -27,12 +27,9 @@ public class SimpleFileVisitorImpl extends SimpleFileVisitor<Path> {
     public SimpleFileVisitorImpl(String stablePath) {
         this.stablePath = Paths.get(stablePath);
     }
-
-    ArrayList<FileObject> getDirsAndFiles() {
+    public ArrayList<FileObject> getDirsAndFiles() {
         return dirsAndFiles;
     }
-
-
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         if(dir.getParent().toString().contains(stablePath.toString()) && attrs.isDirectory()) {

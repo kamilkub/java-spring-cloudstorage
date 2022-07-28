@@ -1,6 +1,5 @@
 package com.cloudstorage.service;
 
-
 import com.cloudstorage.model.StorageUser;
 import com.cloudstorage.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +12,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
-
 @Component
 public class AuthenticationService implements UserDetailsService {
-
-
 	@Autowired
 	private UsersRepository usersRepository;
-
-
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
@@ -35,9 +29,7 @@ public class AuthenticationService implements UserDetailsService {
 			throw new UsernameNotFoundException("User is not activated");
 		}
 
-
 		List<SimpleGrantedAuthority> grantedAuth = Collections.singletonList(new SimpleGrantedAuthority("user"));
-
 
 		return new User(user.getUsername(), user.getPassword(), user.getAuthorities());
 	}

@@ -5,7 +5,7 @@ import com.cloudstorage.config.UserAuthenticationFilter;
 import com.cloudstorage.model.FileObject;
 import com.cloudstorage.service.StatisticsService;
 import com.cloudstorage.service.StorageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,20 +25,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @RestController
 @RequestMapping("/user/storage")
+@RequiredArgsConstructor
 public class StorageController {
-
-	private UserAuthenticationFilter userAuthenticationFilter;
-
-	private StorageService storageService;
-
-	private StatisticsService statisticsService;
-
-	@Autowired
-	public StorageController(UserAuthenticationFilter userAuthenticationFilter, StorageService storageService, StatisticsService statisticsService) {
-		this.userAuthenticationFilter = userAuthenticationFilter;
-		this.storageService = storageService;
-		this.statisticsService = statisticsService;
-	}
+	private final UserAuthenticationFilter userAuthenticationFilter;
+	private final StorageService storageService;
+	private final StatisticsService statisticsService;
 
 	@PostMapping("/upload")
 	public void storageUpload(@RequestParam("files") MultipartFile[] storageFile, Model model, HttpServletResponse response) {

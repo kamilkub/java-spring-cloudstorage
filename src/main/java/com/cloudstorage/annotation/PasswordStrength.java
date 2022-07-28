@@ -9,7 +9,6 @@ import java.lang.annotation.*;
 @Target(value = ElementType.FIELD)
 @Constraint(validatedBy = PasswordValidator.class)
 public @interface PasswordStrength {
-
-    String password () default "Password strength is to weak";
+    String password() default "Password strength is to weak";
 
 }

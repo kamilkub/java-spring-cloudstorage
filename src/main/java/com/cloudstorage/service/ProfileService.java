@@ -12,17 +12,14 @@ import java.util.Optional;
 
 @Service
 public class ProfileService {
-
     private UsersRepository usersRepository;
     private StorageService storageService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-
     public ProfileService(UsersRepository usersRepository, StorageService storageService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.usersRepository = usersRepository;
         this.storageService = storageService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
-
     public UserProfile getUsersProfileData(String username) {
         StorageUser authUser = usersRepository.findByUsername(username);
         long takenSpace = storageService.getFolderSize(Paths.get(storageService.getBasePathStorage() + authUser.getUsername()));
@@ -45,8 +42,5 @@ public class ProfileService {
         }
 
         return false;
-
     }
-
-
 }

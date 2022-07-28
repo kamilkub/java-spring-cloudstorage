@@ -4,7 +4,7 @@ import com.cloudstorage.config.UserAuthenticationFilter;
 import com.cloudstorage.model.UpdateProfileObject;
 import com.cloudstorage.model.UserProfile;
 import com.cloudstorage.service.ProfileService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,19 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class ProfileController {
-
-    private UserAuthenticationFilter authenticationFilter;
-    private ProfileService profileService;
-
-
-
-    @Autowired
-    public ProfileController(UserAuthenticationFilter authenticationFilter, ProfileService profileService) {
-        this.authenticationFilter = authenticationFilter;
-        this.profileService = profileService;
-    }
-
+    private final UserAuthenticationFilter authenticationFilter;
+    private final ProfileService profileService;
 
     @GetMapping("/profile")
     public String showUserProfile(Model model) {
@@ -38,13 +29,10 @@ public class ProfileController {
     public UserProfile getUserProfileData() {
         return profileService.getUsersProfileData(authenticationFilter.getAuthenticationUsername());
     }
-
     @GetMapping("/statistics")
     public String show() {
         return "statisticsPage";
     }
-
-
     @PostMapping(value = "/update-profile-data")
     @ResponseBody
     public HttpStatus updateUserProfileData(@RequestBody UpdateProfileObject updateObject) {

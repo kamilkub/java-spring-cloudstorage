@@ -24,25 +24,17 @@ import java.util.Optional;
 
 @Service
 public class StorageService {
-
 	private static final Logger logger = LoggerFactory.getLogger(StorageService.class);
-
 	@Value("${BASE_PATH}")
 	private String basePathStorage;
-
 	private UsersRepository usersRepository;
-
-
 	@Autowired
 	public StorageService(UsersRepository usersRepository) {
 		this.usersRepository = usersRepository;
 	}
-
-
 	public String getBasePathStorage() {
 		return basePathStorage;
 	}
-
 	public void uploadFile(MultipartFile storageFile, String userFolder) {
 
 		Path storagePath = Paths.get(basePathStorage + userFolder);
