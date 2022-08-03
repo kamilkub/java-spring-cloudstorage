@@ -9,13 +9,12 @@ import org.springframework.http.HttpStatus;
 @Setter
 @Getter
 @NoArgsConstructor
-public class MessageAdvice {
+public class ResponseDto {
 
     private HttpStatus httpStatus;
     private String message;
 
-
-    public MessageAdvice(HttpStatus httpStatus, String message) {
+    public ResponseDto(HttpStatus httpStatus, String message) {
         this.httpStatus = httpStatus;
         this.message = message;
     }

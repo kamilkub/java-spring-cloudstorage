@@ -2,44 +2,35 @@ package com.cloudstorage.config;
 
 
 import com.cloudstorage.repository.UsersRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.aop.scope.ScopedProxyFactoryBean;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.WebApplicationContext;
 
 @Component
+@RequiredArgsConstructor
 public class UserAuthenticationFilter {
+	private final UsersRepository usersRepository;
 
-	private UsersRepository usersRepository;
-
-	@Autowired
-	public UserAuthenticationFilter(UsersRepository usersRepository) {
-		this.usersRepository = usersRepository;
-	}
-
-	public Authentication isAuthenticatedObject() {
+	public Authentication getAuthentication() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication instanceof UsernamePasswordAuthenticationToken)
-			return authentication;
-		else
-			return null;
+		return authentication instanceof UsernamePasswordAuthenticationToken ? authentication : null;
 	}
-
-	public boolean isAuthenticatedBool() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return authentication instanceof UsernamePasswordAuthenticationToken;
+	public boolean isAuthenticated() {
+		return this.getAuthentication() instanceof UsernamePasswordAuthenticationToken;
 	}
-
 	public String getAuthenticationUsername() {
-		Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication = this.getAuthentication();
 			return authentication instanceof UsernamePasswordAuthenticationToken ? authentication.getName() : null;
 	}
-
 	public String getAuthenticatedDirectory() {
-		Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication =  this.getAuthentication();
 		return usersRepository.findByUsername(authentication.getName()).getDirectoryName();
 	}
-
-
 }

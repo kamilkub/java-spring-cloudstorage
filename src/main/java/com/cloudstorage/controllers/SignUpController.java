@@ -22,62 +22,70 @@ import java.util.stream.Collectors;
 @Controller
 @RequiredArgsConstructor
 public class SignUpController {
-	private SignUpService signUpService;
-	private StorageService storageService;
-	private UserAuthenticationFilter userAuthenticationFilter;
-	private StatisticsService statisticsService;
+    private final SignUpService signUpService;
+    private final StorageService storageService;
+    private final StatisticsService statisticsService;
 
-	@GetMapping("/sign-in")
-	public String showLoginPage(){
-		if(userAuthenticationFilter.isAuthenticatedBool())
-			return "redirect:/user";
-		else
-			return "auth_templates/sign-in";
-	}
+    @GetMapping("/sign-in")
+    public String showLoginPage(
+            UserAuthenticationFilter userAuthenticationFilter
+    ) {
+        if (userAuthenticationFilter.isAuthenticated())
+            return "redirect:/user";
+        else
+            return "auth_templates/sign-in";
+    }
 
+    @GetMapping("/sign-up")
+    public String signUpPage(
+            UserAuthenticationFilter userAuthenticationFilter,
+            Model model
+    ) {
+        if (userAuthenticationFilter.isAuthenticated())
+            return "redirect:/user";
+        else
+            model.addAttribute("user", new StorageUser());
+        return "auth_templates/sign-up";
+    }
 
-	@GetMapping("/sign-up")
-	public String signUpPage(Model model){
-		if(userAuthenticationFilter.isAuthenticatedBool())
-			return "redirect:/user";
-		else
-			model.addAttribute("user", new StorageUser());
-			return "auth_templates/sign-up";
-	}
+    @PostMapping("/sign-up")
+    public String signUpUser(
+            @Valid @ModelAttribute("user") StorageUser user,
+            BindingResult result,
+            Model model
+    ) {
 
+        if (result.hasErrors()) {
+            model.addAttribute("listOfErrors", result.getAllErrors()
+                    .stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.toList()));
+        } else {
+            boolean isEmailTaken = signUpService.isEmailTaken(user.getEmail());
+            boolean isUsernameTaken = signUpService.isUsernameTaken(user.getUsername());
 
-	@PostMapping("/sign-up")
-	public String signUpUser(@Valid @ModelAttribute("user") StorageUser user, BindingResult result, Model model) {
+            if (!isEmailTaken && !isUsernameTaken) {
+                String pinFromService = signUpService.signUpUser(user);
+                storageService.init(user.getUsername());
+                statisticsService.initLogFile(user.getUsername());
 
-		if (result.hasErrors()) {
-			model.addAttribute("listOfErrors", result.getAllErrors()
-					.stream()
-					.map(DefaultMessageSourceResolvable::getDefaultMessage)
-					.collect(Collectors.toList()));
-		} else {
-			boolean isEmailTaken = signUpService.isEmailTaken(user.getEmail());
-			boolean isUsernameTaken = signUpService.isUsernameTaken(user.getUsername());
+                model.addAttribute("pin", "http://localhost:8080/activate?pin=" + pinFromService);
+                model.addAttribute("userSaved", true);
+                model.addAttribute("qrcode", true);
+            }
+            model.addAttribute("exists", isEmailTaken || isUsernameTaken);
+        }
 
-			if (!isEmailTaken && !isUsernameTaken) {
-				String pinFromService = signUpService.signUpUser(user);
-				storageService.init(user.getUsername());
-				statisticsService.initLogFile(user.getUsername());
+        return "auth_templates/sign-up";
+    }
 
-				model.addAttribute("pin", "http://localhost:8080/activate?pin=" + pinFromService);
-				model.addAttribute("userSaved", true);
-				model.addAttribute("qrcode", true);
-			}
-			model.addAttribute("exists", isEmailTaken || isUsernameTaken);
-		}
-
-		return "auth_templates/sign-up";
-
-	}
-
-	@GetMapping("/activate")
-	public String activateUser(@RequestParam("pin") String pin, Model model){
-		String attribute = signUpService.activateUser(pin) ? "activationSuccess" : "wrongPing";
-		model.addAttribute(attribute, true);
-		return "activatePage";
-	}
+    @GetMapping("/activate")
+    public String activateUser(
+            @RequestParam("pin") String pin,
+            Model model
+    ) {
+        String attribute = signUpService.activateUser(pin) ? "activationSuccess" : "wrongPing";
+        model.addAttribute(attribute, true);
+        return "activatePage";
+    }
 }

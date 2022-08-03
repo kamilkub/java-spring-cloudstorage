@@ -16,11 +16,11 @@ import java.nio.file.NoSuchFileException;
 @ControllerAdvice
 public class AdviceRestException {
     @ExceptionHandler(value = {FileNotFoundException.class, NoSuchFileException.class, IOException.class})
-    public MessageAdvice handleFileNotFound() {
-        return new MessageAdvice(HttpStatus.NOT_FOUND, "No such file in your directory");
+    public ResponseDto handleFileNotFound() {
+        return new ResponseDto(HttpStatus.NOT_FOUND, "No such file in your directory");
     }
     @ExceptionHandler({MultipartException.class, SocketTimeoutException.class})
-    public MessageAdvice socketTimeoutAndMultipartException() {
-        return new MessageAdvice(HttpStatus.NOT_IMPLEMENTED, "We could not process this request. We cannot process folders");
+    public ResponseDto socketTimeoutAndMultipartException() {
+        return new ResponseDto(HttpStatus.NOT_IMPLEMENTED, "We could not process this request. We cannot process folders");
     }
 }

@@ -26,7 +26,7 @@ public class HomeController {
 
 	@GetMapping(value = {"/", "/home"})
 	public String welcomePage(){
-		if(userAuthenticationFilter.isAuthenticatedBool())
+		if(userAuthenticationFilter.isAuthenticated())
 	   		return "redirect:/user";
 		else
 			return "welcomePage";

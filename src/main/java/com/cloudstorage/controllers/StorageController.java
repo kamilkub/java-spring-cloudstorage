@@ -11,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
@@ -27,110 +26,104 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RequestMapping("/user/storage")
 @RequiredArgsConstructor
 public class StorageController {
-	private final UserAuthenticationFilter userAuthenticationFilter;
-	private final StorageService storageService;
-	private final StatisticsService statisticsService;
+    private final UserAuthenticationFilter userAuthenticationFilter;
+    private final StorageService storageService;
+    private final StatisticsService statisticsService;
 
-	@PostMapping("/upload")
-	public void storageUpload(@RequestParam("files") MultipartFile[] storageFile, Model model, HttpServletResponse response) {
+    @PostMapping("/upload")
+    public void storageUpload(
+            @RequestParam("files") MultipartFile[] storageFile,
+            HttpServletResponse response
+	) {
+        AtomicBoolean isAvailableSpace = new AtomicBoolean(true);
 
-		AtomicBoolean isAvailableSpace = new AtomicBoolean(true);
+        Arrays.stream(storageFile)
+                .forEach((multipartFile) -> {
+                    if (!multipartFile.isEmpty() && userAuthenticationFilter.isAuthenticated()
+                            && storageService.isEnoughSpace(userAuthenticationFilter.getAuthenticationUsername(),
+                            userAuthenticationFilter.getAuthenticationUsername(), multipartFile.getSize())) {
 
-		Arrays.stream(storageFile)
-				.forEach((multipartFile) -> {
-						if(!multipartFile.isEmpty() && userAuthenticationFilter.isAuthenticatedBool()
-								&& storageService.isEnoughSpace(userAuthenticationFilter.getAuthenticationUsername(),
-								userAuthenticationFilter.getAuthenticationUsername(), multipartFile.getSize())) {
+                        storageService.uploadFile(multipartFile, userAuthenticationFilter.getAuthenticationUsername());
+                        statisticsService.logUsersUpload(userAuthenticationFilter.getAuthenticationUsername(), multipartFile.getOriginalFilename());
+                    } else {
+                        isAvailableSpace.set(false);
 
-							storageService.uploadFile(multipartFile, userAuthenticationFilter.getAuthenticationUsername());
-							statisticsService.logUsersUpload(userAuthenticationFilter.getAuthenticationUsername(), multipartFile.getOriginalFilename());
-						} else {
-							isAvailableSpace.set(false);
+                    }
+                });
 
-						}});
+        if (!isAvailableSpace.get()) {
+            response.setStatus(406);
+        }
 
-		if(!isAvailableSpace.get()) {
-			response.setStatus(406);
-		}
+    }
 
-	}
+    @PostMapping("/delete-file")
+    public String deleteFile(@RequestBody String fileName) {
 
+        if (userAuthenticationFilter.isAuthenticated() && !fileName.isEmpty())
+            if (storageService.removeFileByName(userAuthenticationFilter.getAuthenticationUsername(), fileName))
+                return "redirect:/user";
 
+        return "redirect:/user";
+    }
 
-	@PostMapping("/delete-file")
-	public String deleteFile(@RequestBody String fileName)  {
+    @PostMapping("/delete-dir")
+    public String deleteDir(@RequestBody String dirName) {
 
-		if (userAuthenticationFilter.isAuthenticatedBool() && !fileName.isEmpty())
-			if (storageService.removeFileByName(userAuthenticationFilter.getAuthenticationUsername(), fileName))
-				return "redirect:/user";
+        if (userAuthenticationFilter.isAuthenticated())
+            if (storageService.removeDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName))
+                return "redirect:/user";
 
-		return "redirect:/user";
-	}
+        return "redirect:/user";
+    }
 
-	@PostMapping("/delete-dir")
-	public String deleteDir(@RequestBody String dirName) {
+    @PostMapping("/create-dir")
+    public String createDir(@RequestParam("dirName") String dirName) {
 
-		if (userAuthenticationFilter.isAuthenticatedBool())
-			if (storageService.removeDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName))
-				return "redirect:/user";
+        if (dirName.length() > 0 && userAuthenticationFilter.isAuthenticated()) {
+            if (storageService.createDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName)) {
+                return "Folder created";
+            } else {
+                return "File already exists";
+            }
 
-		return "redirect:/user";
-	}
+        } else {
+            return "redirect:/user";
+        }
+    }
 
+    @GetMapping("/all-files")
+    public ArrayList<FileObject> getAllFiles() {
+        return userAuthenticationFilter.isAuthenticated() ?
+                storageService.getFileAndDirectoriesPaths(userAuthenticationFilter.getAuthenticationUsername()) : null;
+    }
 
+    @ResponseBody
+    @GetMapping(value = "/download-file", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public Object shareFileUnderUrl(@RequestParam("fileName") String fileName) {
 
+        String userName = userAuthenticationFilter.getAuthenticationUsername();
 
-	@PostMapping("/create-dir")
-	public String createDir(@RequestParam("dirName") String dirName) {
+        if (storageService.fileExists(userName, fileName) && fileName.contains(".")) {
+            File file = new File(storageService.getBasePathStorage() + userName + File.separator + fileName);
 
-		if(dirName.length() > 0 && userAuthenticationFilter.isAuthenticatedBool()){
-			if(storageService.createDirectory(userAuthenticationFilter.getAuthenticationUsername(), dirName)) {
-				return "Folder created";
-			} else {
-				return "File already exists";
-			}
+            HttpHeaders header = new HttpHeaders();
+            header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName.substring(fileName.lastIndexOf("/") + 1));
+            header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+            header.add("Pragma", "no-cache");
+            header.add("Expires", "0");
 
-		} else {
-			return "redirect:/user";
-		}
-	}
+            header.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            header.setContentLength(file.length());
 
+            return new ResponseEntity<>(new FileSystemResource(file), header, HttpStatus.OK);
 
+        } else {
 
-	@GetMapping("/all-files")
-	public ArrayList<FileObject> getAllFiles() {
-		return userAuthenticationFilter.isAuthenticatedBool() ?
-				storageService.getFileAndDirectoriesPaths(userAuthenticationFilter.getAuthenticationUsername()) : null;
-	}
+            return new RedirectView("/user");
+        }
 
-
-
-	@ResponseBody
-	@GetMapping(value = "/download-file", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public Object shareFileUnderUrl(@RequestParam("fileName") String fileName) {
-
-		String userName = userAuthenticationFilter.getAuthenticationUsername();
-
-		if(storageService.fileExists(userName, fileName) && fileName.contains(".")) {
-			File file = new File(storageService.getBasePathStorage() + userName + File.separator + fileName);
-
-			HttpHeaders header = new HttpHeaders();
-			header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName.substring(fileName.lastIndexOf("/")+1));
-			header.add("Cache-Control", "no-cache, no-store, must-revalidate");
-			header.add("Pragma", "no-cache");
-			header.add("Expires", "0");
-
-			header.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-			header.setContentLength(file.length());
-
-			return new ResponseEntity<>(new FileSystemResource(file), header, HttpStatus.OK);
-
-		} else {
-
-			return new RedirectView("/user");
-		}
-
-	}
+    }
 
 
 }
