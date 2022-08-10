@@ -1,0 +1,14 @@
+version: "3.0"
+services:
+  mongo_database:
+    image: mongo
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=root123
+    ports:
+      - "27017:27017"
+    volumes:
+      - cloudstorage_mongodb:/data/db
+volumes:
+  cloudstorage_mongodb:
+    driver: local
