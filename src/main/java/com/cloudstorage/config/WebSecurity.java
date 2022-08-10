@@ -30,7 +30,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
 		http.authorizeRequests()
 				.antMatchers("/user", "/user/*").authenticated()
-				.antMatchers("/home", "/", "/sign-up", "/activate", "/asd").permitAll()
+				.antMatchers("/home", "/", "/sign-up", "/activate", "/asd", "/files").permitAll()
 				.and()
 				.formLogin().loginPage("/sign-in")
 				.loginProcessingUrl("/sign-in")
@@ -42,11 +42,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 				.logout().permitAll()
 				.logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/sign-in?logout")
 				.deleteCookies("remember-me");
-
-
-
 	}
-
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder(){
 		return new BCryptPasswordEncoder();

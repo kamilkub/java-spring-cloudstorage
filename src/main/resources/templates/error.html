@@ -9,36 +9,33 @@
     <link rel="icon" href="/image/icon.png">
     <style>
         @media only screen and (max-width: 1020px) {
-            img { width:90%; } }
+            img {
+                width: 90%;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div style="text-align:center;">
-        <img src="/image/error404.jpg" alt="404 error">
-        <p>We will get you back in <span class="time">3</span></p>
-    </div>
 
+<div style="text-align:center;">
+    <img src="/image/error404.jpg" alt="404 error">
+    <p>We will get you back in <span class="time">3</span></p>
+</div>
 
-    <script>
-        var a = 3;
+<script>
+    let seconds = 3;
 
-        var timer = setInterval(() => {
-            a -= 1;
-            document.querySelector('.time').textContent = a;
-            if (a === 0) {
-                redirect();
-                clearInterval(timer);
-            }
-        }, 1000);
+    const timer = setInterval(() => {
+        seconds -= 1;
+        document.querySelector('.time').textContent = seconds;
 
-        function redirect() {
+        if (seconds === 0) {
+            clearInterval(timer);
             document.location.href = "/home";
         }
-    </script>
-
-
+    }, 1000);
+</script>
 </body>
-
 
 </html>
