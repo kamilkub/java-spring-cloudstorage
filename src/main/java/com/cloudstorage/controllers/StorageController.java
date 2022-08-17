@@ -52,7 +52,7 @@ public class StorageController {
                 });
 
         if (!isAvailableSpace.get()) {
-            response.setStatus(406);
+            response.setStatus(HttpStatus.NOT_ACCEPTABLE.value());
         }
 
     }

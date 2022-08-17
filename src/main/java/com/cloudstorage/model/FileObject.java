@@ -9,6 +9,7 @@ import lombok.Setter;
 public class FileObject {
 
     private int id;
+
     private String fileName;
 
     @JsonIgnore
@@ -20,6 +21,6 @@ public class FileObject {
         this.fileName = fileName;
         this.fullPath = fullPath;
         this.isDirectory = isDirectory;
-    }
 
+    }
 }
